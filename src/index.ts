@@ -1,7 +1,6 @@
 import express, * as Express from 'express';
 import { ApolloServer, SchemaDirectiveVisitor } from 'apollo-server-express';
 import { GraphQLField } from 'graphql';
-import { createDataSources } from './serverContext';
 
 import executableSchema from './executableSchema';
 
