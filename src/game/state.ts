@@ -11,10 +11,25 @@ enum Room {
   TULL_3,
 }
 
+enum Direction {
+  NORTH,
+  NORTH_EAST,
+  EAST,
+  EAST_SOUTH_EAST,
+  SOUTH_EAST,
+  SOUTH_SOUTH_EAST,
+  SOUTH,
+  SOUTH_SOUTH_WEST,
+  SOUTH_WEST,
+  WEST_SOUTH_WEST,
+  WEST,
+  NORTH_WEST,
+}
+
 interface RoomNeigbour {
-  direction: string;
+  direction: Direction;
   room: Room;
-};
+}
 
 enum ObjectType {
   KEY_PAIR,
@@ -27,21 +42,21 @@ enum ObjectType {
 interface GameObject {
   type: ObjectType,
   description: string;
-};
+}
 
 interface KeyPair {
   public: string;
   private: string;
 }
 
-interface State {
+export interface State {
   currentRoom: Room;
   computerPassword: string;
   doorKey: KeyPair;
   computerFiles: KeyPair[];
   hasUnlockedComputer: boolean;
   hasUnlockedDoor: boolean;
-};
+}
 
 interface UnlockComputerAction {
   type: "UNLOCK_COMPUTER";
@@ -66,11 +81,82 @@ interface ActionResult {
   message: string;
 };
 
-export const getRoomNeighbours = (room : Room) => {
-  return [{
-    direction: 'N',
-    room: Room.COMPUTER,
-  }];
+// Everything listed in clockwise direction, starting out at noon
+export const getRoomNeighbours = (room : Room): RoomNeigbour[] => {
+  switch (room) {
+    case Room.COMPUTER: {
+      return [{
+        direction: Direction.EAST_SOUTH_EAST,
+        room: Room.TULL_1,
+      }, {
+        direction: Direction.SOUTH_SOUTH_EAST,
+        room: Room.TULL_2,
+      }, {
+        direction: Direction.SOUTH_SOUTH_WEST,
+        room: Room.PASSWORD,
+      }, {
+        direction: Direction.WEST_SOUTH_WEST,
+        room: Room.TULL_3,
+      }];
+    }
+    case Room.TULL_1: {
+      return [{
+        direction: Direction.SOUTH,
+        room: Room.TULL_2,
+      }, {
+        direction: Direction.NORTH_WEST,
+        room: Room.COMPUTER,
+      }];
+    }
+    case Room.TULL_2: {
+      return [{
+        direction: Direction.NORTH,
+        room: Room.TULL_1,
+      }, {
+        direction: Direction.SOUTH_WEST,
+        room: Room.START,
+      }, {
+        direction: Direction.WEST,
+        room: Room.PASSWORD,
+      }, {
+        direction: Direction.NORTH_WEST,
+        room: Room.COMPUTER,
+      }];
+    }
+    case Room.START: {
+      return [{
+        direction: Direction.NORTH_EAST,
+        room: Room.TULL_2,
+      }, {
+        direction: Direction.NORTH_WEST,
+        room: Room.PASSWORD,
+      }];
+    }
+    case Room.PASSWORD: {
+      return [{
+        direction: Direction.NORTH,
+        room: Room.TULL_3,
+      }, {
+        direction: Direction.NORTH_EAST,
+        room: Room.COMPUTER,
+      }, {
+        direction: Direction.EAST,
+        room: Room.TULL_2,
+      }, {
+        direction: Direction.SOUTH_EAST,
+        room: Room.START,
+      }];
+    }
+    case Room.TULL_3: {
+      return [{
+        direction: Direction.NORTH_EAST,
+        room: Room.COMPUTER,
+      }, {
+        direction: Direction.SOUTH,
+        room: Room.PASSWORD,
+      }];
+    }
+  }
 }
 
 export const getRoomObjects = (state: State, room : Room): GameObject[] => {
@@ -155,13 +241,13 @@ export const dispatchAction = (state: State, action: Action): ActionResult => {
           },
           ok: true,
           message: 'Computer unlocked!',
-        }
+        };
       } else {
         return {
           newState: state,
           ok: false,
           message: 'Wrong password!',
-        }
+        };
       }
     }
     case 'UNLOCK_DOOR': {
@@ -197,7 +283,7 @@ export const dispatchAction = (state: State, action: Action): ActionResult => {
           newState: state,
           ok: false,
           message: 'Cannot move to this location because it is not a neighbour',
-        }
+        };
       }
     }
   }
