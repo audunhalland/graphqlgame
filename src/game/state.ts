@@ -164,17 +164,19 @@ export const getRoomObjects = (state: State, room : Room): GameObject[] => {
     case Room.COMPUTER:
       return [{
         type: ObjectType.COMPUTER,
-        description: 'A large computer',
+        description: state.hasUnlockedComputer
+          ? 'A large mainframe computer. It is currently locked.'
+          : 'A large mainframe computer. You have successfully unlocked it!',
       }];
     case Room.START:
       return [{
         type: ObjectType.ESCAPE_DOOR,
-        description: 'A big, closed door.'
+        description: "A big, locked door. It's blocking your exit from the labyrinth. On the door is a big sign with a code on it.",
       }];
     case Room.PASSWORD:
       return [{
         type: ObjectType.PASSWORD,
-        description: `A root password. The password is "${state.computerPassword}"`,
+        description: `A root password. It says "${state.computerPassword}".`,
       }]
     default:
       return [];
@@ -197,7 +199,7 @@ export const getSubObjects = (state: State, object: GameObject): GameObject[] =>
     case ObjectType.ESCAPE_DOOR:
       return [{
         type: ObjectType.SIGN,
-        description: `A sign. It prints "${state.doorKey.public}"`,
+        description: `A big sign on the door. It reads "public key: ${state.doorKey.public}"`,
       }];
     default:
       return [];
@@ -276,13 +278,13 @@ export const dispatchAction = (state: State, action: Action): ActionResult => {
             currentRoom: action.room,
           },
           ok: true,
-          message: 'You moved to the new location',
+          message: 'You moved to the room.',
         };
       } else {
         return {
           newState: state,
           ok: false,
-          message: 'Cannot move to this location because it is not a neighbour',
+          message: 'Cannot move directly to that room, because it is too far away. Try moving to an immediate neighbouring room instead.',
         };
       }
     }
