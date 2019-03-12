@@ -3,7 +3,7 @@ import * as GeneratePassword from 'generate-password';
 const NUMBER_OF_COMPUTER_FILES = 8;
 
 // Clockwise, starting north
-enum Room {
+export enum Room {
   LIGHTSWITCH,
   COMPUTER,
   VERYDARK,
@@ -32,7 +32,8 @@ interface RoomNeigbour {
   room: Room;
 }
 
-enum ObjectType {
+export enum ObjectType {
+  BUTTON,
   KEY_PAIR,
   ESCAPE_DOOR,
   SIGN,
@@ -60,6 +61,10 @@ export interface State {
   hasUnlockedDoor: boolean;
 }
 
+interface PushButtonAction {
+  type: "PUSH_BUTTON";
+};
+
 interface UnlockComputerAction {
   type: "UNLOCK_COMPUTER";
   password: string;
@@ -75,7 +80,7 @@ interface GotoRoomAction {
   room: Room;
 };
 
-type Action = UnlockComputerAction | UnlockDoorAction | GotoRoomAction;
+type Action = PushButtonAction | UnlockComputerAction | UnlockDoorAction | GotoRoomAction;
 
 interface ActionResult {
   newState: State;
@@ -165,7 +170,7 @@ export const getRoomDescription = (state: State, room: Room): string => {
   switch (room) {
     case Room.LIGHTSWITCH:
       return state.currentRoom === room
-        ? 'You are in a room with four connecting corridors. On the wall there is a button.'
+        ? 'You are in a room with four connecting corridors. On the wall there is a button. You hear a humming noise to the east.'
         : 'A room with a button on the wall.';
     case Room.COMPUTER:
       return state.currentRoom === room
@@ -174,22 +179,22 @@ export const getRoomDescription = (state: State, room: Room): string => {
     case Room.VERYDARK:
       return state.currentRoom === room
         ? 'You are in a very dark room. You cannot see anything but the light from the other ends of the four corridors connecting to the room. There is nothing else here.'
-        : 'A very dark room';
+        : 'A very dark room.';
     case Room.START:
       return state.currentRoom === room
-        ? 'Oh no. You are trapped in a room. Is it part of a labyrinth? There are two corridors leading out of the room. Behind you is an enormous locked door.'
+        ? 'Oh no. You are trapped in a room. Is it part of a labyrinth? There appears to be two corridors leading out of the room. Behind you is an enormous locked door.'
         : 'A room with an enormous locked door.';
     case Room.PASSWORD:
       return state.hasPressedLightSwitch
         ?
         (state.currentRoom === room
           ? 'You are in a lit room. You see something (a note?) lying on the floor.'
-          : 'A lit room'
+          : 'A room with a lit lamp.'
         )
         :
         (state.currentRoom === room
           ? 'You are in a dark room, and because there is no lighting, you cannot see anything.'
-          : 'A dark room'
+          : 'A dark room.'
         );
     case Room.WIRE:
       return state.currentRoom === room
@@ -202,6 +207,11 @@ export const getRoomDescription = (state: State, room: Room): string => {
 
 export const getRoomObjects = (state: State, room : Room): GameObject[] => {
   switch (room) {
+    case Room.LIGHTSWITCH:
+      return [{
+        type: ObjectType.BUTTON,
+        description: 'A button on the wall.',
+      }];
     case Room.COMPUTER:
       return [{
         type: ObjectType.COMPUTER,
@@ -277,41 +287,70 @@ export const newGame = (): State => {
 
 export const dispatchAction = (state: State, action: Action): ActionResult => {
   switch (action.type) {
-    case 'UNLOCK_COMPUTER': {
-      if (action.password === state.computerPassword) {
+    case 'PUSH_BUTTON': {
+      if (state.currentRoom !== Room.LIGHTSWITCH) {
         return {
-          newState: {
-            ...state,
-            hasUnlockedComputer: true,
-          },
-          ok: true,
-          message: 'Computer unlocked!',
+          newState: state,
+          ok: false,
+          message: "There isn't any button here.",
         };
-      } else {
+      }
+
+      return {
+        newState: {
+          ...state,
+          hasPressedLightSwitch: true,
+        },
+        ok: true,
+        message: 'You push the button. You hear a faint click in the distance, through one of the corridors behind you. In one of the previously dark corridors you now see a light at its other end.',
+      }
+    }
+    case 'UNLOCK_COMPUTER': {
+      if (state.currentRoom !== Room.COMPUTER) {
+        return {
+          newState: state,
+          ok: false,
+          message: 'The computer is not here.',
+        }
+      } else if (action.password !== state.computerPassword) {
         return {
           newState: state,
           ok: false,
           message: 'Wrong password!',
         };
       }
+
+      return {
+        newState: {
+          ...state,
+          hasUnlockedComputer: true,
+        },
+        ok: true,
+        message: 'Computer unlocked!',
+      };
     }
     case 'UNLOCK_DOOR': {
-      if (action.privateKey === state.doorKey.private) {
+      if (state.currentRoom !== Room.START) {
         return {
-          newState: {
-            ...state,
-            hasUnlockedDoor: true,
-          },
-          ok: true,
-          message: 'Door unlocked! You finished the game!',
-        };
-      } else {
+          newState: state,
+          ok: false,
+          message: 'The door is not here.'
+        }
+      } else if (action.privateKey !== state.doorKey.private) {
         return {
           newState: state,
           ok: false,
           message: 'Wrong private key!!',
         };
       }
+      return {
+        newState: {
+          ...state,
+          hasUnlockedDoor: true,
+        },
+        ok: true,
+        message: 'Door unlocked! You finished the game!',
+      };
     }
     case 'GOTO_ROOM': {
       if (getRoomNeighbours(state.currentRoom).filter(neighbour => neighbour.room === action.room).length > 0) {
