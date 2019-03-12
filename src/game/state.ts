@@ -1,3 +1,6 @@
+import * as GeneratePassword from 'generate-password';
+
+const NUMBER_OF_COMPUTER_FILES = 8;
 
 enum Room {
   COMPUTER,
@@ -113,6 +116,32 @@ export const getSubObjects = (state: State, object: GameObject): GameObject[] =>
     default:
       return [];
   }
+}
+
+export const newGame = (): State => {
+  const computerFiles = [...Array(NUMBER_OF_COMPUTER_FILES).keys()].map(index => {
+    return {
+      public: GeneratePassword.generate({
+        length: 20,
+        numbers: true,
+      }),
+      private: GeneratePassword.generate({
+        length: 40,
+        numbers: true,
+      }),
+    }
+  });
+  return {
+    currentRoom: Room.START,
+    computerPassword: GeneratePassword.generate({
+      length: 10,
+      numbers: true,
+    }),
+    computerFiles: computerFiles,
+    doorKey: computerFiles[Math.floor(Math.random()*computerFiles.length)],
+    hasUnlockedComputer: false,
+    hasUnlockedDoor: false,
+  };
 }
 
 export const dispatchAction = (state: State, action: Action): ActionResult => {
