@@ -1,14 +1,15 @@
 import * as GeneratePassword from 'generate-password';
+import { start } from 'repl';
 
 const NUMBER_OF_COMPUTER_FILES = 8;
 
 enum Room {
   COMPUTER,
-  TULL_1,
-  TULL_2,
+  VERY_DARK,
+  BUTTON,
   START,
   PASSWORD,
-  TULL_3,
+  SLIGHTLY_NOISY,
 }
 
 enum Direction {
@@ -54,6 +55,7 @@ export interface State {
   computerPassword: string;
   doorKey: KeyPair;
   computerFiles: KeyPair[];
+  hasPressedLightSwitch: boolean;
   hasUnlockedComputer: boolean;
   hasUnlockedDoor: boolean;
 }
@@ -87,31 +89,31 @@ export const getRoomNeighbours = (room : Room): RoomNeigbour[] => {
     case Room.COMPUTER: {
       return [{
         direction: Direction.EAST_SOUTH_EAST,
-        room: Room.TULL_1,
+        room: Room.VERY_DARK,
       }, {
         direction: Direction.SOUTH_SOUTH_EAST,
-        room: Room.TULL_2,
+        room: Room.BUTTON,
       }, {
         direction: Direction.SOUTH_SOUTH_WEST,
         room: Room.PASSWORD,
       }, {
         direction: Direction.WEST_SOUTH_WEST,
-        room: Room.TULL_3,
+        room: Room.SLIGHTLY_NOISY,
       }];
     }
-    case Room.TULL_1: {
+    case Room.VERY_DARK: {
       return [{
         direction: Direction.SOUTH,
-        room: Room.TULL_2,
+        room: Room.BUTTON,
       }, {
         direction: Direction.NORTH_WEST,
         room: Room.COMPUTER,
       }];
     }
-    case Room.TULL_2: {
+    case Room.BUTTON: {
       return [{
         direction: Direction.NORTH,
-        room: Room.TULL_1,
+        room: Room.VERY_DARK,
       }, {
         direction: Direction.SOUTH_WEST,
         room: Room.START,
@@ -126,7 +128,7 @@ export const getRoomNeighbours = (room : Room): RoomNeigbour[] => {
     case Room.START: {
       return [{
         direction: Direction.NORTH_EAST,
-        room: Room.TULL_2,
+        room: Room.BUTTON,
       }, {
         direction: Direction.NORTH_WEST,
         room: Room.PASSWORD,
@@ -135,19 +137,19 @@ export const getRoomNeighbours = (room : Room): RoomNeigbour[] => {
     case Room.PASSWORD: {
       return [{
         direction: Direction.NORTH,
-        room: Room.TULL_3,
+        room: Room.SLIGHTLY_NOISY,
       }, {
         direction: Direction.NORTH_EAST,
         room: Room.COMPUTER,
       }, {
         direction: Direction.EAST,
-        room: Room.TULL_2,
+        room: Room.BUTTON,
       }, {
         direction: Direction.SOUTH_EAST,
         room: Room.START,
       }];
     }
-    case Room.TULL_3: {
+    case Room.SLIGHTLY_NOISY: {
       return [{
         direction: Direction.NORTH_EAST,
         room: Room.COMPUTER,
@@ -156,6 +158,41 @@ export const getRoomNeighbours = (room : Room): RoomNeigbour[] => {
         room: Room.PASSWORD,
       }];
     }
+  }
+}
+
+export const getRoomDescription = (state: State, room: Room): string => {
+  switch (room) {
+    case Room.COMPUTER:
+      return state.currentRoom === room
+        ? 'You are in a large and noisy room. In front of you is a big mainframe computer. The noise comes from its large cooling fans. There are four corridors behind you.'
+        : 'The computer room.';
+    case Room.VERY_DARK:
+      return state.currentRoom === room
+        ? 'You are in a very dark room. You cannot see anything but the light from the other ends of the two corridors connecting to the room. There is nothing else here.'
+        : 'A very dark room';
+    case Room.BUTTON:
+      return state.currentRoom === room
+        ? 'You are in a room with four connecting corridors. On the wall there is a button.'
+        : 'A room with a button on the wall.';
+    case Room.START:
+      return state.currentRoom === room
+        ? 'Oh no. You are trapped in a room. Is it part of a labyrinth? There are two corridors leading out of the room. Behind you is an enormous locked door.'
+        : 'A room with an enormous locked door.';
+    case Room.PASSWORD:
+      return state.hasPressedLightSwitch
+        ?
+        (state.currentRoom === room
+          ? 'You are in a lit room. You see something (a note?) lying on the floor.'
+          : 'A lit room'
+        )
+        :
+        (state.currentRoom === room
+          ? 'You are in a dark room, and because there is no lighting, you cannot see anything.'
+          : 'A dark room'
+        );
+    default:
+      return 'Nothing of particular interest here.';
   }
 }
 
@@ -227,6 +264,7 @@ export const newGame = (): State => {
     }),
     computerFiles: computerFiles,
     doorKey: computerFiles[Math.floor(Math.random()*computerFiles.length)],
+    hasPressedLightSwitch: false,
     hasUnlockedComputer: false,
     hasUnlockedDoor: false,
   };
