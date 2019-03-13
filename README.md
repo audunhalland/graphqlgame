@@ -1,6 +1,6 @@
-# graphgame
+# Graphyrinth
 
-A game about X in GraphQL?
+A Graphical JSON-based Adventure Game
 
 ```
 yarn
