@@ -1,6 +1,6 @@
 {
   "name": "graphgame",
-  "version": "0.1",
+  "version": "0.0.1",
   "description": "GraphQL game",
   "main": "index.js",
   "license": "MIT",
