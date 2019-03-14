@@ -1,16 +1,17 @@
-import { State, Room, newGame, getRoomDescription, getRoomObjects } from './game/state';
+import {
+  Room, Direction, newGame, ObjectType, getRoomDescription, getRoomNeighbours, getRoomObjects
+} from './game/state';
 
 const gameState = newGame();
 
-const getRoom = (state: State, id: Room) => ({
-  description: getRoomDescription(state, id),
-  objects: getRoomObjects(state, id),
-});
-
 const resolvers = {
   Query: {
-    currentRoom: () =>
-      getRoom(gameState, gameState.currentRoom),
+    currentRoom: () => ({
+      room: gameState.currentRoom,
+      description: getRoomDescription(gameState, gameState.currentRoom),
+      objects: getRoomObjects(gameState, gameState.currentRoom),
+    }),
+    roomNeighbours: () => getRoomNeighbours(gameState.currentRoom),
   },
 };
 
