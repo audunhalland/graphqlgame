@@ -3,7 +3,6 @@ const { gql } = require('apollo-server');
 const typeDefs = gql`
   type Query {
     currentRoom: Room!
-    room(id: ID!): Room
   }
 
   type Room {
@@ -12,17 +11,7 @@ const typeDefs = gql`
   }
 
   type GameObject {
-    type: ObjectType!
     description: String!
-  }
-
-  enum ObjectType {
-    BUTTON
-    KEY_PAIR
-    ESCAPE_DOOR
-    SIGN
-    PASSWORD
-    COMPUTER
   }
 `
 
