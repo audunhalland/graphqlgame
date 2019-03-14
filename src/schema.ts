@@ -7,7 +7,7 @@ const typeDefs = gql`
   }
 
   type Room {
-    room: RoomName!
+    room: RoomType!
     description: String!
     objects: [GameObject]
   }
@@ -19,10 +19,10 @@ const typeDefs = gql`
 
   type RoomNeighbour {
     direction: Direction!
-    room: RoomName!
+    room: RoomType!
   }
 
-  enum RoomName {
+  enum RoomType {
     LIGHTSWITCH
     COMPUTER
     VERYDARK
@@ -53,6 +53,15 @@ const typeDefs = gql`
     SIGN
     PASSWORD
     COMPUTER
+  }
+
+  type Mutation {
+    goToRoom(room: RoomType!): CurrentRoomUpdateResponse!
+  }
+
+  type CurrentRoomUpdateResponse {
+    success: Boolean!
+    message: String
   }
 `
 
