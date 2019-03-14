@@ -11,7 +11,7 @@ const resolvers = {
   Query: {
     currentRoom: () =>
       getRoom(gameState, gameState.currentRoom),
-    room: (_: any, { id }: any) =>
+    room: (_: any, { id }: { id: Room }) =>
       getRoom(gameState, id),
   },
 };

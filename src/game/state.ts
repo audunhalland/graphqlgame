@@ -4,12 +4,12 @@ const NUMBER_OF_COMPUTER_FILES = 8;
 
 // Clockwise, starting north
 export enum Room {
-  LIGHTSWITCH,
-  COMPUTER,
-  VERYDARK,
-  START,
-  PASSWORD,
-  WIRE,
+  LIGHTSWITCH = "0",
+  COMPUTER = "1",
+  VERYDARK = "2",
+  START = "3",
+  PASSWORD = "4",
+  WIRE = "5",
 }
 
 enum Direction {
@@ -80,7 +80,7 @@ interface GotoRoomAction {
   room: Room;
 };
 
-type Action = PushButtonAction | UnlockComputerAction | UnlockDoorAction | GotoRoomAction;
+type Action = PushButtonAction | UnlockComputerAction | UnlockDoorAction | GotoRoomAction;
 
 interface ActionResult {
   newState: State;
@@ -89,7 +89,7 @@ interface ActionResult {
 };
 
 // Everything listed in clockwise direction, starting out at noon
-export const getRoomNeighbours = (room : Room): RoomNeigbour[] => {
+export const getRoomNeighbours = (room: Room): RoomNeigbour[] => {
   switch (room) {
     case Room.LIGHTSWITCH: {
       return [{
@@ -205,7 +205,7 @@ export const getRoomDescription = (state: State, room: Room): string => {
   }
 }
 
-export const getRoomObjects = (state: State, room : Room): GameObject[] => {
+export const getRoomObjects = (state: State, room: Room): GameObject[] => {
   switch (room) {
     case Room.LIGHTSWITCH:
       return [{
@@ -278,7 +278,7 @@ export const newGame = (): State => {
       numbers: true,
     }),
     computerFiles: computerFiles,
-    doorKey: computerFiles[Math.floor(Math.random()*computerFiles.length)],
+    doorKey: computerFiles[Math.floor(Math.random() * computerFiles.length)],
     hasPressedLightSwitch: false,
     hasUnlockedComputer: false,
     hasUnlockedDoor: false,
