@@ -1,8 +1,21 @@
 import {
-  Room, Direction, newGame, ObjectType, getRoomDescription, getRoomNeighbours, getRoomObjects, dispatchAction
+  Action, Room, newGame, getRoomDescription, getRoomNeighbours, getRoomObjects, dispatchAction
 } from './game/state';
 
 let gameState = newGame();
+
+const handleActionDispatch = (action: Action) => {
+  const { ok, message, newState } = dispatchAction(gameState, action);
+
+  if (ok) {
+    gameState = newState;
+  }
+
+  return {
+    success: ok,
+    message: message
+  }
+}
 
 const resolvers = {
   Query: {
@@ -14,18 +27,10 @@ const resolvers = {
     roomNeighbours: () => getRoomNeighbours(gameState.currentRoom),
   },
   Mutation: {
-    goToRoom: (_: any, { room }: { room: Room }) => {
-      const { ok, message, newState } = dispatchAction(gameState, { type: "GOTO_ROOM", room });
-
-      if (ok) {
-        gameState = newState;
-      }
-
-      return {
-        success: ok,
-        message: message
-      }
-    }
+    goToRoom: (_: any, { room }: { room: Room }) =>
+      handleActionDispatch({ type: "GOTO_ROOM", room }),
+    pushButton: () =>
+      handleActionDispatch({ type: "PUSH_BUTTON" }),
   },
 };
 

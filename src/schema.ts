@@ -56,10 +56,11 @@ const typeDefs = gql`
   }
 
   type Mutation {
-    goToRoom(room: RoomType!): CurrentRoomUpdateResponse!
+    goToRoom(room: RoomType!): ActionResponse!
+    pushButton: ActionResponse!
   }
 
-  type CurrentRoomUpdateResponse {
+  type ActionResponse {
     success: Boolean!
     message: String
   }

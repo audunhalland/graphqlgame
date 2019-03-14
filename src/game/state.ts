@@ -80,7 +80,7 @@ interface GotoRoomAction {
   room: Room;
 };
 
-type Action = PushButtonAction | UnlockComputerAction | UnlockDoorAction | GotoRoomAction;
+export type Action = PushButtonAction | UnlockComputerAction | UnlockDoorAction | GotoRoomAction;
 
 interface ActionResult {
   newState: State;
