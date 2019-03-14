@@ -4,6 +4,8 @@ import {
 
 let gameState = newGame();
 
+console.log(gameState);
+
 const handleActionDispatch = (action: Action) => {
   const { ok, message, newState } = dispatchAction(gameState, action);
 
@@ -28,9 +30,11 @@ const resolvers = {
   },
   Mutation: {
     goToRoom: (_: any, { room }: { room: Room }) =>
-      handleActionDispatch({ type: "GOTO_ROOM", room }),
+      handleActionDispatch({ type: 'GOTO_ROOM', room }),
     pushButton: () =>
-      handleActionDispatch({ type: "PUSH_BUTTON" }),
+      handleActionDispatch({ type: 'PUSH_BUTTON' }),
+    unlockComputer: (_: any, { password }: { password: string }) =>
+      handleActionDispatch({ type: 'UNLOCK_COMPUTER', password }),
   },
 };
 

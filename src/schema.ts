@@ -58,6 +58,7 @@ const typeDefs = gql`
   type Mutation {
     goToRoom(room: RoomType!): ActionResponse!
     pushButton: ActionResponse!
+    unlockComputer(password: String!): ActionResponse!
   }
 
   type ActionResponse {
