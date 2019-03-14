@@ -4,7 +4,12 @@ import { ApolloServer, gql } from 'apollo-server-express';
 import typeDefs from './schema';
 import resolvers from './resolvers';
 
-const server = new ApolloServer({ typeDefs, resolvers });
+const server = new ApolloServer({
+  typeDefs,
+  resolvers,
+  introspection: true,
+  playground: true,
+});
 
 const app = express();
 server.applyMiddleware({ app });
