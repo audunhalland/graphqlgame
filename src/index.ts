@@ -1,28 +1,14 @@
-import express, * as Express from 'express';
-import { ApolloServer, SchemaDirectiveVisitor } from 'apollo-server-express';
-import { GraphQLField } from 'graphql';
+import express from 'express';
+import { ApolloServer, gql } from 'apollo-server-express';
 
-import executableSchema from './executableSchema';
+import typeDefs from './schema';
+import resolvers from './resolvers';
 
-// TODO: Experiment; generated connection/pagination types?
-class ConnectionDirective extends SchemaDirectiveVisitor {
-  visitFieldDefinition(field: GraphQLField<any, any>) {
-  }
-}
-
-const server = new ApolloServer({
-  schema: executableSchema,
-  context: ({ req } : { req: Express.Request }) => {
-    const token = req.headers.authorization || '';
-    return { token };
-  }
-});
+const server = new ApolloServer({ typeDefs, resolvers });
 
 const app = express();
 server.applyMiddleware({ app });
 
-const port = 4000;
-
-app.listen({ port }, () => {
-  console.log(`🚀 Server ready at port ${port}`);
-});
+app.listen({ port: 4000 }, () =>
+  console.log(`🚀 Server ready at http://localhost:4000${server.graphqlPath}`)
+);
