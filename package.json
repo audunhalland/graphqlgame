@@ -9,7 +9,7 @@
     "start:dev": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/index.ts",
     "test": "jest --watch",
     "test:ci": "jest",
-    "build": "tsc -p .",
+    "build": "tsc -p ."
   },
   "devDependencies": {
     "@types/express": "^4.16.0",
