@@ -1,15 +1,15 @@
 {
   "name": "graphgame",
-  "version": "0.1",
+  "version": "0.0.1",
   "description": "GraphQL game",
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "yarn build:live",
+    "start": "node build/index.js",
+    "start:dev": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/index.ts",
     "test": "jest --watch",
     "test:ci": "jest",
-    "build": "tsc -p .",
-    "build:live": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/index.ts"
+    "build": "tsc -p ."
   },
   "devDependencies": {
     "@types/express": "^4.16.0",
@@ -27,6 +27,7 @@
     "typescript": "^3.2.2"
   },
   "dependencies": {
+    "apollo-server": "^2.4.8",
     "apollo-server-express": "^2.3.1",
     "express": "^4.16.4",
     "graphql": "^14.0.2",
