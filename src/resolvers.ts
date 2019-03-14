@@ -35,6 +35,8 @@ const resolvers = {
       handleActionDispatch({ type: 'PUSH_BUTTON' }),
     unlockComputer: (_: any, { password }: { password: string }) =>
       handleActionDispatch({ type: 'UNLOCK_COMPUTER', password }),
+    unlockDoor: (_: any, { privateKey }: { privateKey: string }) =>
+      handleActionDispatch({ type: 'UNLOCK_DOOR', privateKey })
   },
 };
 

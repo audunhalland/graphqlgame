@@ -59,6 +59,7 @@ const typeDefs = gql`
     goToRoom(room: RoomType!): ActionResponse!
     pushButton: ActionResponse!
     unlockComputer(password: String!): ActionResponse!
+    unlockDoor(privateKey: String!): ActionResponse!
   }
 
   type ActionResponse {
