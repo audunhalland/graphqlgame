@@ -1,6 +1,6 @@
-import * as GeneratePassword from 'generate-password';
+import * as Random from './random';
 
-const NUMBER_OF_COMPUTER_FILES = 8;
+export const NUMBER_OF_COMPUTER_FILES = 8;
 
 // Clockwise, starting north
 export enum Room {
@@ -46,16 +46,9 @@ interface GameObject {
   description: string;
 }
 
-interface KeyPair {
-  public: string;
-  private: string;
-}
-
 export interface State {
   currentRoom: Room;
-  computerPassword: string;
-  doorKey: KeyPair;
-  computerFiles: KeyPair[];
+  seed: number;
   hasPressedLightSwitch: boolean;
   hasUnlockedComputer: boolean;
   hasUnlockedDoor: boolean;
@@ -82,7 +75,7 @@ interface GotoRoomAction {
 
 export type Action = PushButtonAction | UnlockComputerAction | UnlockDoorAction | GotoRoomAction;
 
-interface ActionResult {
+export interface ActionResult {
   newState: State;
   ok: boolean;
   message: string;
@@ -166,6 +159,13 @@ export const getRoomNeighbours = (room: Room): RoomNeigbour[] => {
   }
 }
 
+export const getComputerPassword = (state: State): string => Random.getPassword(state.seed, 0, 10);
+export const getPrivateKey = (state: State, index: number): string => Random.getPrivateKey(state.seed, index, 40);
+export const getPublicKey = (state: State, index: number): string => Random.getPublicKey(state.seed, index, 20);
+export const getDoorKeyIndex = (state: State): number => Math.floor(Random.getNumber(state.seed, 42) * NUMBER_OF_COMPUTER_FILES);
+export const getDoorPrivateKey = (state: State): string => getPrivateKey(state, getDoorKeyIndex(state));
+export const getDoorPublicKey = (state: State): string => getPublicKey(state, getDoorKeyIndex(state));
+
 export const getRoomDescription = (state: State, room: Room): string => {
   switch (room) {
     case Room.LIGHTSWITCH:
@@ -174,7 +174,7 @@ export const getRoomDescription = (state: State, room: Room): string => {
         : 'A room with a button on the wall.';
     case Room.COMPUTER:
       return state.currentRoom === room
-        ? 'You are in a large and noisy room. In front of you is a big mainframe computer. The noise comes from its large cooling fans. There are four corridors behind you.'
+        ? 'You are in a large and noisy room. In front of you is a big mainframe computer. The noise comes from its large cooling fans. There are two corridor entrances on either side of you.'
         : 'The computer room.';
     case Room.VERYDARK:
       return state.currentRoom === room
@@ -228,7 +228,7 @@ export const getRoomObjects = (state: State, room: Room): GameObject[] => {
       if (!state.hasPressedLightSwitch) return [];
       return [{
         type: ObjectType.PASSWORD,
-        description: `A root password lying on the floor. It says "${state.computerPassword}".`,
+        description: `A root password lying on the floor. It says "${getComputerPassword(state)}".`,
       }]
     default:
       return [];
@@ -239,10 +239,10 @@ export const getSubObjects = (state: State, object: GameObject): GameObject[] =>
   switch (object.type) {
     case ObjectType.COMPUTER:
       if (state.hasUnlockedComputer) {
-        return state.computerFiles.map(
-          (keyPair) => ({
+        return [...Array(NUMBER_OF_COMPUTER_FILES).keys()].map(
+          (index) => ({
             type: ObjectType.KEY_PAIR,
-            description: `A key pair. It says PUBLIC "${keyPair.public}", PRIVATE "${keyPair.private}".`,
+            description: `A key pair. It says PUBLIC "${getPublicKey(state, index)}", PRIVATE "${getPrivateKey(state, index)}".`,
           })
         );
       } else {
@@ -251,7 +251,7 @@ export const getSubObjects = (state: State, object: GameObject): GameObject[] =>
     case ObjectType.ESCAPE_DOOR:
       return [{
         type: ObjectType.SIGN,
-        description: `A big sign on the door. It reads "public key: ${state.doorKey.public}"`,
+        description: `A big sign on the door. It reads "public key: ${getDoorPublicKey(state)}"`,
       }];
     default:
       return [];
@@ -259,26 +259,9 @@ export const getSubObjects = (state: State, object: GameObject): GameObject[] =>
 }
 
 export const newGame = (): State => {
-  const computerFiles = [...Array(NUMBER_OF_COMPUTER_FILES).keys()].map(index => {
-    return {
-      public: GeneratePassword.generate({
-        length: 20,
-        numbers: true,
-      }),
-      private: GeneratePassword.generate({
-        length: 40,
-        numbers: true,
-      }),
-    }
-  });
   return {
     currentRoom: Room.START,
-    computerPassword: GeneratePassword.generate({
-      length: 10,
-      numbers: true,
-    }),
-    computerFiles: computerFiles,
-    doorKey: computerFiles[Math.floor(Math.random() * computerFiles.length)],
+    seed: Math.random(),
     hasPressedLightSwitch: false,
     hasUnlockedComputer: false,
     hasUnlockedDoor: false,
@@ -312,7 +295,7 @@ export const dispatchAction = (state: State, action: Action): ActionResult => {
           ok: false,
           message: 'The computer is not here.',
         }
-      } else if (action.password !== state.computerPassword) {
+      } else if (action.password !== getComputerPassword(state)) {
         return {
           newState: state,
           ok: false,
@@ -336,7 +319,7 @@ export const dispatchAction = (state: State, action: Action): ActionResult => {
           ok: false,
           message: 'The door is not here.'
         }
-      } else if (action.privateKey !== state.doorKey.private) {
+      } else if (action.privateKey !== getDoorPrivateKey(state)) {
         return {
           newState: state,
           ok: false,
