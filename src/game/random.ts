@@ -1,4 +1,4 @@
-import seedrandom from 'seedrandom';
+const seedrandom = require('seedrandom');
 
 const CHARACTERS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVXYZ0123456789.,:;*@!#$%&/()=?+';
 
