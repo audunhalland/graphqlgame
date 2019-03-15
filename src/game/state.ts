@@ -4,27 +4,27 @@ export const NUMBER_OF_COMPUTER_FILES = 8;
 
 // Clockwise, starting north
 export enum Room {
-  LIGHTSWITCH,
-  COMPUTER,
-  VERYDARK,
-  START,
-  PASSWORD,
-  WIRE,
+  LIGHTSWITCH = "LIGHTSWITCH",
+  COMPUTER = "COMPUTER",
+  VERYDARK = "VERYDARK",
+  START = "START",
+  PASSWORD = "PASSWORD",
+  WIRE = "WIRE",
 }
 
-enum Direction {
-  NORTH,
-  NORTH_EAST,
-  EAST,
-  EAST_SOUTH_EAST,
-  SOUTH_EAST,
-  SOUTH_SOUTH_EAST,
-  SOUTH,
-  SOUTH_SOUTH_WEST,
-  SOUTH_WEST,
-  WEST_SOUTH_WEST,
-  WEST,
-  NORTH_WEST,
+export enum Direction {
+  NORTH = "NORTH",
+  NORTH_EAST = "NORTH_EAST",
+  EAST = "EAST",
+  EAST_SOUTH_EAST = "EAST_SOUTH_EAST",
+  SOUTH_EAST = "SOUTH_EAST",
+  SOUTH_SOUTH_EAST = "SOUTH_SOUTH_EAST",
+  SOUTH = "SOUTH",
+  SOUTH_SOUTH_WEST = "SOUTH_SOUTH_WEST",
+  SOUTH_WEST = "SOUTH_WEST",
+  WEST_SOUTH_WEST = "WEST_SOUTH_WEST",
+  WEST = "WEST",
+  NORTH_WEST = "NORTH_WEST",
 }
 
 interface RoomNeigbour {
@@ -33,12 +33,12 @@ interface RoomNeigbour {
 }
 
 export enum ObjectType {
-  BUTTON,
-  KEY_PAIR,
-  ESCAPE_DOOR,
-  SIGN,
-  PASSWORD,
-  COMPUTER,
+  BUTTON = "BUTTON",
+  KEY_PAIR = "KEY_PAIR",
+  ESCAPE_DOOR = "ESCAPE_DOOR",
+  SIGN = "SIGN",
+  PASSWORD = "PASSWORD",
+  COMPUTER = "COMPUTER",
 }
 
 interface GameObject {
@@ -73,7 +73,7 @@ interface GotoRoomAction {
   room: Room;
 };
 
-type Action = PushButtonAction | UnlockComputerAction | UnlockDoorAction | GotoRoomAction;
+export type Action = PushButtonAction | UnlockComputerAction | UnlockDoorAction | GotoRoomAction;
 
 export interface ActionResult {
   newState: State;
@@ -82,7 +82,7 @@ export interface ActionResult {
 };
 
 // Everything listed in clockwise direction, starting out at noon
-export const getRoomNeighbours = (room : Room): RoomNeigbour[] => {
+export const getRoomNeighbours = (room: Room): RoomNeigbour[] => {
   switch (room) {
     case Room.LIGHTSWITCH: {
       return [{
@@ -205,7 +205,7 @@ export const getRoomDescription = (state: State, room: Room): string => {
   }
 }
 
-export const getRoomObjects = (state: State, room : Room): GameObject[] => {
+export const getRoomObjects = (state: State, room: Room): GameObject[] => {
   switch (room) {
     case Room.LIGHTSWITCH:
       return [{

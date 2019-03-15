@@ -3,10 +3,11 @@ const { gql } = require('apollo-server');
 const typeDefs = gql`
   type Query {
     currentRoom: Room!
-    room(id: ID!): Room
+    roomNeighbours: [RoomNeighbour]!
   }
 
   type Room {
+    room: RoomType!
     description: String!
     objects: [GameObject]
   }
@@ -16,6 +17,35 @@ const typeDefs = gql`
     description: String!
   }
 
+  type RoomNeighbour {
+    direction: Direction!
+    room: RoomType!
+  }
+
+  enum RoomType {
+    LIGHTSWITCH
+    COMPUTER
+    VERYDARK
+    START
+    PASSWORD
+    WIRE
+  }
+
+  enum Direction {
+    NORTH
+    NORTH_EAST
+    EAST
+    EAST_SOUTH_EAST
+    SOUTH_EAST
+    SOUTH_SOUTH_EAST
+    SOUTH
+    SOUTH_SOUTH_WEST
+    SOUTH_WEST
+    WEST_SOUTH_WEST
+    WEST
+    NORTH_WEST
+  }
+
   enum ObjectType {
     BUTTON
     KEY_PAIR
@@ -23,6 +53,18 @@ const typeDefs = gql`
     SIGN
     PASSWORD
     COMPUTER
+  }
+
+  type Mutation {
+    goToRoom(room: RoomType!): ActionResponse!
+    pushButton: ActionResponse!
+    unlockComputer(password: String!): ActionResponse!
+    unlockDoor(privateKey: String!): ActionResponse!
+  }
+
+  type ActionResponse {
+    success: Boolean!
+    message: String
   }
 `
 

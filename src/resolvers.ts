@@ -1,18 +1,42 @@
-import { State, Room, newGame, getRoomDescription, getRoomObjects } from './game/state';
+import {
+  Action, Room, newGame, getRoomDescription, getRoomNeighbours, getRoomObjects, dispatchAction
+} from './game/state';
 
-const gameState = newGame();
+let gameState = newGame();
 
-const getRoom = (state: State, id: Room) => ({
-  description: getRoomDescription(state, id),
-  objects: getRoomObjects(state, id),
-});
+console.log(gameState);
+
+const handleActionDispatch = (action: Action) => {
+  const { ok, message, newState } = dispatchAction(gameState, action);
+
+  if (ok) {
+    gameState = newState;
+  }
+
+  return {
+    success: ok,
+    message: message
+  }
+}
 
 const resolvers = {
   Query: {
-    currentRoom: () =>
-      getRoom(gameState, gameState.currentRoom),
-    room: (_: any, { id }: any) =>
-      getRoom(gameState, id),
+    currentRoom: () => ({
+      room: gameState.currentRoom,
+      description: getRoomDescription(gameState, gameState.currentRoom),
+      objects: getRoomObjects(gameState, gameState.currentRoom),
+    }),
+    roomNeighbours: () => getRoomNeighbours(gameState.currentRoom),
+  },
+  Mutation: {
+    goToRoom: (_: any, { room }: { room: Room }) =>
+      handleActionDispatch({ type: 'GOTO_ROOM', room }),
+    pushButton: () =>
+      handleActionDispatch({ type: 'PUSH_BUTTON' }),
+    unlockComputer: (_: any, { password }: { password: string }) =>
+      handleActionDispatch({ type: 'UNLOCK_COMPUTER', password }),
+    unlockDoor: (_: any, { privateKey }: { privateKey: string }) =>
+      handleActionDispatch({ type: 'UNLOCK_DOOR', privateKey })
   },
 };
 
