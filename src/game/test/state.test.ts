@@ -24,7 +24,10 @@ describe('game state', () => {
 
     state = verify(State.dispatchAction(state, { type: 'MOVE', direction: State.Direction.EAST }));
     state = verify(State.dispatchAction(state, { type: 'MOVE', direction: State.Direction.NORTH_WEST }));
-    state = verify(State.dispatchAction(state, { type: 'PUSH_BUTTON' }));
+    state = verify(State.dispatchAction(state, {
+      type: 'PUSH',
+      objectType: State.ObjectType.BUTTON,
+    }));
     state = verify(State.dispatchAction(state, { type: 'MOVE', direction: State.Direction.SOUTH_SOUTH_WEST }));
 
     const password = State.getRoomObjects(state, state.currentRoom)[0];
@@ -34,7 +37,11 @@ describe('game state', () => {
 
     state = verify(State.dispatchAction(state, { type: 'MOVE', direction: State.Direction.EAST }));
     state = verify(State.dispatchAction(state, { type: 'MOVE', direction: State.Direction.NORTH }));
-    state = verify(State.dispatchAction(state, { type: 'UNLOCK_COMPUTER', password: State.getComputerPassword(state) }));
+    state = verify(State.dispatchAction(state, {
+      type: 'UNLOCK',
+      objectType: State.ObjectType.COMPUTER,
+      key: State.getComputerPassword(state),
+    }));
 
     const computer = State.getRoomObjects(state, state.currentRoom)[0];
     const keys = State.getSubObjects(state, computer);
@@ -51,7 +58,11 @@ describe('game state', () => {
     state = verify(State.dispatchAction(state, { type: 'MOVE', direction: State.Direction.WEST_SOUTH_WEST }));
     state = verify(State.dispatchAction(state, { type: 'MOVE', direction: State.Direction.SOUTH }));
     state = verify(State.dispatchAction(state, { type: 'MOVE', direction: State.Direction.SOUTH_EAST }));
-    state = verify(State.dispatchAction(state, { type: 'UNLOCK_DOOR', privateKey: doorPrivateKey }));
+    state = verify(State.dispatchAction(state, {
+      type: 'UNLOCK',
+      objectType: State.ObjectType.ESCAPE_DOOR,
+      key: doorPrivateKey
+    }));
 
     expect(state.hasUnlockedDoor).toEqual(true);
   });

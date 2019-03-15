@@ -57,18 +57,15 @@ export interface State {
   hasUnlockedDoor: boolean;
 }
 
-interface PushButtonAction {
-  type: "PUSH_BUTTON";
+interface PushAction {
+  type: "PUSH";
+  objectType: ObjectType;
 };
 
-interface UnlockComputerAction {
-  type: "UNLOCK_COMPUTER";
-  password: string;
-};
-
-interface UnlockDoorAction {
-  type: "UNLOCK_DOOR";
-  privateKey: string;
+interface UnlockAction {
+  type: "UNLOCK";
+  objectType: ObjectType;
+  key: string;
 };
 
 interface MoveAction {
@@ -76,7 +73,7 @@ interface MoveAction {
   direction: Direction,
 }
 
-export type Action = PushButtonAction | UnlockComputerAction | UnlockDoorAction | MoveAction;
+export type Action = PushAction | UnlockAction | MoveAction;
 
 export interface ActionResult {
   newState: State;
@@ -290,70 +287,76 @@ export const newGame = (): State => {
 
 export const dispatchAction = (state: State, action: Action): ActionResult => {
   switch (action.type) {
-    case 'PUSH_BUTTON': {
-      if (state.currentRoom !== Room.LIGHTSWITCH) {
+    case 'PUSH': {
+      if (!getRoomObjects(state, state.currentRoom).find(obj => obj.type === action.objectType)) {
         return {
           newState: state,
           ok: false,
-          message: "There isn't any button here.",
+          message: `There is no ${action.objectType} here.`,
         };
-      }
-
-      return {
-        newState: {
-          ...state,
-          hasPressedLightSwitch: true,
-        },
-        ok: true,
-        message: 'You push the button. You hear a faint click in the distance, through one of the corridors behind you. In one of the previously dark corridors you now see a light at its other end.',
+      } else if (action.objectType === ObjectType.BUTTON) {
+        return {
+          newState: {
+            ...state,
+            hasPressedLightSwitch: true,
+          },
+          ok: true,
+          message: 'You push the button. You hear a faint click in the distance, through one of the corridors behind you. In one of the previously dark corridors you now see a light at its other end.',
+        }
+      } else {
+        return {
+          newState: state,
+          ok: false,
+          message: `The ${action.objectType} cannot be pushed.`,
+        };
       }
     }
-    case 'UNLOCK_COMPUTER': {
-      if (state.currentRoom !== Room.COMPUTER) {
+    case 'UNLOCK': {
+      if (!getRoomObjects(state, state.currentRoom).find(obj => obj.type === action.objectType)) {
         return {
           newState: state,
           ok: false,
-          message: 'The computer is not here.',
+          message: `There is no ${action.objectType} here.`,
+        };
+      } else if (action.objectType === ObjectType.COMPUTER) {
+        if (action.key !== getComputerPassword(state)) {
+          return {
+            newState: state,
+            ok: false,
+            message: 'Wrong password!',
+          };
         }
-      } else if (action.password !== getComputerPassword(state)) {
+        return {
+          newState: {
+            ...state,
+            hasUnlockedComputer: true,
+          },
+          ok: true,
+          message: 'Computer unlocked!',
+        };
+      } else if (action.objectType === ObjectType.ESCAPE_DOOR) {
+        if (action.key !== getDoorPrivateKey(state)) {
+          return {
+            newState: state,
+            ok: false,
+            message: 'Wrong private key!!',
+          };
+        }
+        return {
+          newState: {
+            ...state,
+            hasUnlockedDoor: true,
+          },
+          ok: true,
+          message: 'Door unlocked! You finished the game!',
+        };
+      } else {
         return {
           newState: state,
           ok: false,
-          message: 'Wrong password!',
+          message: `The ${action.objectType} cannot be unlocked.`,
         };
       }
-
-      return {
-        newState: {
-          ...state,
-          hasUnlockedComputer: true,
-        },
-        ok: true,
-        message: 'Computer unlocked!',
-      };
-    }
-    case 'UNLOCK_DOOR': {
-      if (state.currentRoom !== Room.START) {
-        return {
-          newState: state,
-          ok: false,
-          message: 'The door is not here.'
-        }
-      } else if (action.privateKey !== getDoorPrivateKey(state)) {
-        return {
-          newState: state,
-          ok: false,
-          message: 'Wrong private key!!',
-        };
-      }
-      return {
-        newState: {
-          ...state,
-          hasUnlockedDoor: true,
-        },
-        ok: true,
-        message: 'Door unlocked! You finished the game!',
-      };
     }
     case 'MOVE': {
       const neighbour = getRoomNeighbours(state, state.currentRoom)
