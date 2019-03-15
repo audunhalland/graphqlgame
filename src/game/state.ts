@@ -48,6 +48,9 @@ interface GameObject {
 
 export interface State {
   currentRoom: Room;
+  visitedRooms: {
+    [room in Room]: boolean;
+  };
   seed: number;
   hasPressedLightSwitch: boolean;
   hasUnlockedComputer: boolean;
@@ -68,12 +71,12 @@ interface UnlockDoorAction {
   privateKey: string;
 };
 
-interface GotoRoomAction {
-  type: "GOTO_ROOM";
-  room: Room;
-};
+interface MoveAction {
+  type: 'MOVE',
+  direction: Direction,
+}
 
-export type Action = PushButtonAction | UnlockComputerAction | UnlockDoorAction | GotoRoomAction;
+export type Action = PushButtonAction | UnlockComputerAction | UnlockDoorAction | MoveAction;
 
 export interface ActionResult {
   newState: State;
@@ -82,7 +85,10 @@ export interface ActionResult {
 };
 
 // Everything listed in clockwise direction, starting out at noon
-export const getRoomNeighbours = (room: Room): RoomNeigbour[] => {
+export const getRoomNeighbours = (state: State, room: Room): RoomNeigbour[] => {
+  if (!state.visitedRooms[room]) {
+    return [];
+  }
   switch (room) {
     case Room.LIGHTSWITCH: {
       return [{
@@ -167,6 +173,9 @@ export const getDoorPrivateKey = (state: State): string => getPrivateKey(state, 
 export const getDoorPublicKey = (state: State): string => getPublicKey(state, getDoorKeyIndex(state));
 
 export const getRoomDescription = (state: State, room: Room): string => {
+  if (!state.visitedRooms[room]) {
+    return 'You have not yet visited this room.';
+  }
   switch (room) {
     case Room.LIGHTSWITCH:
       return state.currentRoom === room
@@ -206,6 +215,9 @@ export const getRoomDescription = (state: State, room: Room): string => {
 }
 
 export const getRoomObjects = (state: State, room: Room): GameObject[] => {
+  if (!state.visitedRooms[room]) {
+    return [];
+  }
   switch (room) {
     case Room.LIGHTSWITCH:
       return [{
@@ -261,6 +273,14 @@ export const getSubObjects = (state: State, object: GameObject): GameObject[] =>
 export const newGame = (): State => {
   return {
     currentRoom: Room.START,
+    visitedRooms: {
+      LIGHTSWITCH: false,
+      COMPUTER: false,
+      VERYDARK: false,
+      START: true,
+      PASSWORD: false,
+      WIRE: false,
+    },
     seed: Math.random(),
     hasPressedLightSwitch: false,
     hasUnlockedComputer: false,
@@ -335,22 +355,28 @@ export const dispatchAction = (state: State, action: Action): ActionResult => {
         message: 'Door unlocked! You finished the game!',
       };
     }
-    case 'GOTO_ROOM': {
-      if (getRoomNeighbours(state.currentRoom).filter(neighbour => neighbour.room === action.room).length > 0) {
+    case 'MOVE': {
+      const neighbour = getRoomNeighbours(state, state.currentRoom)
+        .find(neighbour => neighbour.direction === action.direction);
+      if (neighbour) {
         return {
           newState: {
             ...state,
-            currentRoom: action.room,
+            visitedRooms: {
+              ...state.visitedRooms,
+              [neighbour.room]: true,
+            },
+            currentRoom: neighbour.room,
           },
           ok: true,
-          message: 'You moved to the room.',
+          message: 'You moved to a new room',
         };
       } else {
         return {
           newState: state,
           ok: false,
-          message: 'Cannot move directly to that room, because it is too far away. Try moving to an immediate neighbouring room instead.',
-        };
+          message: 'Cannot move in that direction, as there is no corridor there.'
+        }
       }
     }
   }

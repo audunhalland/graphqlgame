@@ -26,7 +26,7 @@ const resolvers = {
       description: getRoomDescription(gameState, gameState.currentRoom),
       objects: getRoomObjects(gameState, gameState.currentRoom),
     }),
-    roomNeighbours: () => getRoomNeighbours(gameState.currentRoom),
+    roomNeighbours: () => getRoomNeighbours(gameState, gameState.currentRoom),
   },
   Mutation: {
     goToRoom: (_: any, { room }: { room: Room }) =>

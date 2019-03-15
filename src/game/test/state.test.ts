@@ -19,21 +19,21 @@ describe('game state', () => {
     expect(sign.type).toEqual(State.ObjectType.SIGN);
     expect(sign.description).toContain(State.getDoorPublicKey(state));
 
-    state = verify(State.dispatchAction(state, { type: 'GOTO_ROOM', room: State.Room.PASSWORD }));
+    state = verify(State.dispatchAction(state, { type: 'MOVE', direction: State.Direction.NORTH_WEST }));
     expect(State.getRoomObjects(state, state.currentRoom)).toEqual([]);
 
-    state = verify(State.dispatchAction(state, { type: 'GOTO_ROOM', room: State.Room.VERYDARK }));
-    state = verify(State.dispatchAction(state, { type: 'GOTO_ROOM', room: State.Room.LIGHTSWITCH }));
+    state = verify(State.dispatchAction(state, { type: 'MOVE', direction: State.Direction.EAST }));
+    state = verify(State.dispatchAction(state, { type: 'MOVE', direction: State.Direction.NORTH_WEST }));
     state = verify(State.dispatchAction(state, { type: 'PUSH_BUTTON' }));
-    state = verify(State.dispatchAction(state, { type: 'GOTO_ROOM', room: State.Room.PASSWORD }));
+    state = verify(State.dispatchAction(state, { type: 'MOVE', direction: State.Direction.SOUTH_SOUTH_WEST }));
 
     const password = State.getRoomObjects(state, state.currentRoom)[0];
 
     expect(password.type).toEqual(State.ObjectType.PASSWORD);
     expect(password.description).toContain(State.getComputerPassword(state));
 
-    state = verify(State.dispatchAction(state, { type: 'GOTO_ROOM', room: State.Room.VERYDARK }));
-    state = verify(State.dispatchAction(state, { type: 'GOTO_ROOM', room: State.Room.COMPUTER }));
+    state = verify(State.dispatchAction(state, { type: 'MOVE', direction: State.Direction.EAST }));
+    state = verify(State.dispatchAction(state, { type: 'MOVE', direction: State.Direction.NORTH }));
     state = verify(State.dispatchAction(state, { type: 'UNLOCK_COMPUTER', password: State.getComputerPassword(state) }));
 
     const computer = State.getRoomObjects(state, state.currentRoom)[0];
@@ -47,19 +47,12 @@ describe('game state', () => {
       .map(index => State.getPrivateKey(state, index))
       .filter(privateKey => doorPublicKey.description.indexOf(privateKey) >= 0)[0];
 
-    state = verify(State.dispatchAction(state, { type: 'GOTO_ROOM', room: State.Room.LIGHTSWITCH }));
-    state = verify(State.dispatchAction(state, { type: 'GOTO_ROOM', room: State.Room.WIRE }));
-    state = verify(State.dispatchAction(state, { type: 'GOTO_ROOM', room: State.Room.PASSWORD }));
-    state = verify(State.dispatchAction(state, { type: 'GOTO_ROOM', room: State.Room.START }));
+    state = verify(State.dispatchAction(state, { type: 'MOVE', direction: State.Direction.NORTH_WEST }));
+    state = verify(State.dispatchAction(state, { type: 'MOVE', direction: State.Direction.WEST_SOUTH_WEST }));
+    state = verify(State.dispatchAction(state, { type: 'MOVE', direction: State.Direction.SOUTH }));
+    state = verify(State.dispatchAction(state, { type: 'MOVE', direction: State.Direction.SOUTH_EAST }));
     state = verify(State.dispatchAction(state, { type: 'UNLOCK_DOOR', privateKey: doorPrivateKey }));
 
     expect(state.hasUnlockedDoor).toEqual(true);
-  });
-
-  test('cannot go directly to nonconnected room', () => {
-    const state = State.newGame();
-
-    const result = State.dispatchAction(state, { type: 'GOTO_ROOM', room: State.Room.LIGHTSWITCH });
-    expect(result.ok).toBe(false);
   });
 });

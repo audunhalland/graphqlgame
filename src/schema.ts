@@ -10,6 +10,7 @@ const typeDefs = gql`
     room: RoomType!
     description: String!
     objects: [GameObject]
+    neighbours: [RoomNeighbour!]!
   }
 
   type GameObject {
