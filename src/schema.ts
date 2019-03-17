@@ -3,27 +3,26 @@ const { gql } = require('apollo-server');
 const typeDefs = gql`
   type Query {
     currentRoom: Room!
-    roomNeighbours: [RoomNeighbour]!
   }
 
   type Room {
-    room: RoomType!
     description: String!
-    objects: [GameObject]
+    objects: [GameObject]!
     neighbours: [RoomNeighbour!]!
   }
 
   type GameObject {
     type: ObjectType!
     description: String!
+    objects: [GameObject]!
   }
 
   type RoomNeighbour {
+    room: Room!
     direction: Direction!
-    room: RoomType!
   }
 
-  enum RoomType {
+  enum RoomId {
     LIGHTSWITCH
     COMPUTER
     VERYDARK

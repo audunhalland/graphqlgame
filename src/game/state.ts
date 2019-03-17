@@ -27,7 +27,7 @@ export enum Direction {
   NORTH_WEST = "NORTH_WEST",
 }
 
-interface RoomNeigbour {
+export interface RoomNeigbour {
   direction: Direction;
   room: Room;
 }
@@ -41,7 +41,7 @@ export enum ObjectType {
   COMPUTER = "COMPUTER",
 }
 
-interface GameObject {
+export interface GameObject {
   type: ObjectType,
   description: string;
 }
@@ -225,8 +225,8 @@ export const getRoomObjects = (state: State, room: Room): GameObject[] => {
       return [{
         type: ObjectType.COMPUTER,
         description: state.hasUnlockedComputer
-          ? 'A large mainframe computer. It is currently prompts for a root password.'
-          : 'A large mainframe computer. You have successfully logged into it as root.',
+          ? 'A large mainframe computer. You have successfully logged into it as root.'
+          : 'A large mainframe computer. It is currently prompts for a root password.',
       }];
     case Room.START:
       return [{
@@ -245,6 +245,7 @@ export const getRoomObjects = (state: State, room: Room): GameObject[] => {
 }
 
 export const getSubObjects = (state: State, object: GameObject): GameObject[] => {
+
   switch (object.type) {
     case ObjectType.COMPUTER:
       if (state.hasUnlockedComputer) {

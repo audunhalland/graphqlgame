@@ -1,32 +1,63 @@
 import {
-  Action, Room, newGame, getRoomDescription, getRoomNeighbours, getRoomObjects, dispatchAction, Direction, ObjectType,
+  Action,
+  Direction,
+  GameObject,
+  ObjectType,
+  Room,
+  RoomNeigbour,
+  dispatchAction,
+  getRoomDescription,
+  getRoomNeighbours,
+  getRoomObjects,
+  getSubObjects,
+  newGame,
 } from './game/state';
 
 let gameState = newGame();
-
-console.log(gameState);
 
 const handleActionDispatch = (action: Action) => {
   const { ok, message, newState } = dispatchAction(gameState, action);
 
   if (ok) {
     gameState = newState;
+    console.log("Gamestate: ", gameState);
   }
-
   return {
     success: ok,
-    message: message
+    message,
+    newState,
   }
+}
+
+interface RoomObject {
+  id: Room;
+  description: string;
+  objects: GameObject[];
+  neighbours: RoomNeigbour[];
 }
 
 const resolvers = {
   Query: {
-    currentRoom: () => ({
-      room: gameState.currentRoom,
-      description: getRoomDescription(gameState, gameState.currentRoom),
-      objects: getRoomObjects(gameState, gameState.currentRoom),
+    currentRoom: (_: any) => ({
+      id: gameState.currentRoom,
     }),
-    roomNeighbours: () => getRoomNeighbours(gameState, gameState.currentRoom),
+  },
+  Room: {
+    description: (parent: RoomObject) =>
+      getRoomDescription(gameState, parent.id),
+    objects: (parent: RoomObject) =>
+      getRoomObjects(gameState, parent.id),
+    neighbours: (parent: any) =>
+      getRoomNeighbours(gameState, parent.id)
+  },
+  GameObject: {
+    objects: (parent: GameObject) =>
+      getSubObjects(gameState, parent),
+  },
+  RoomNeighbour: {
+    room: (parent: RoomNeigbour) => ({
+      id: parent.room,
+    }),
   },
   Mutation: {
     move: (_: any, { direction }: { direction: Direction }) =>
