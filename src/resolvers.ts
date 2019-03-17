@@ -1,5 +1,5 @@
 import {
-  Action, Room, newGame, getRoomDescription, getRoomNeighbours, getRoomObjects, dispatchAction
+  Action, Room, newGame, getRoomDescription, getRoomNeighbours, getRoomObjects, dispatchAction, Direction, ObjectType,
 } from './game/state';
 
 let gameState = newGame();
@@ -29,14 +29,12 @@ const resolvers = {
     roomNeighbours: () => getRoomNeighbours(gameState, gameState.currentRoom),
   },
   Mutation: {
-    goToRoom: (_: any, { room }: { room: Room }) =>
-      handleActionDispatch({ type: 'GOTO_ROOM', room }),
-    pushButton: () =>
-      handleActionDispatch({ type: 'PUSH_BUTTON' }),
-    unlockComputer: (_: any, { password }: { password: string }) =>
-      handleActionDispatch({ type: 'UNLOCK_COMPUTER', password }),
-    unlockDoor: (_: any, { privateKey }: { privateKey: string }) =>
-      handleActionDispatch({ type: 'UNLOCK_DOOR', privateKey })
+    move: (_: any, { direction }: { direction: Direction }) =>
+      handleActionDispatch({ type: 'MOVE', direction }),
+    push: (_: any, { objectType }: { objectType: ObjectType }) =>
+      handleActionDispatch({ type: 'PUSH', objectType }),
+    unlock: (_: any, { objectType, key }: { objectType: ObjectType, key: string }) =>
+      handleActionDispatch({ type: 'UNLOCK', objectType, key }),
   },
 };
 
