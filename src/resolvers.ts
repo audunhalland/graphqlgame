@@ -5,6 +5,7 @@ import {
   ObjectType,
   Room,
   RoomNeigbour,
+  State,
   dispatchAction,
   getRoomDescription,
   getRoomNeighbours,
@@ -13,15 +14,9 @@ import {
   newGame,
 } from './game/state';
 
-let gameState = newGame();
-
-const handleActionDispatch = (action: Action) => {
+const handleActionDispatch = (gameState: State, action: Action) => {
   const { ok, message, newState } = dispatchAction(gameState, action);
 
-  if (ok) {
-    gameState = newState;
-    console.log("Gamestate: ", gameState);
-  }
   return {
     success: ok,
     message,
@@ -38,20 +33,20 @@ interface RoomObject {
 
 const resolvers = {
   Query: {
-    currentRoom: (_: any) => ({
+    currentRoom: (_: any, __: any, { gameState }: { gameState: State }) => ({
       id: gameState.currentRoom,
     }),
   },
   Room: {
-    description: (parent: RoomObject) =>
+    description: (parent: RoomObject, _: any, { gameState }: { gameState: State }) =>
       getRoomDescription(gameState, parent.id),
-    objects: (parent: RoomObject) =>
+    objects: (parent: RoomObject, _: any, { gameState }: { gameState: State }) =>
       getRoomObjects(gameState, parent.id),
-    neighbours: (parent: any) =>
+    neighbours: (parent: RoomObject, _: any, { gameState }: { gameState: State }) =>
       getRoomNeighbours(gameState, parent.id)
   },
   GameObject: {
-    objects: (parent: GameObject) =>
+    objects: (parent: GameObject, _: any, { gameState }: { gameState: State }) =>
       getSubObjects(gameState, parent),
   },
   RoomNeighbour: {
@@ -60,12 +55,12 @@ const resolvers = {
     }),
   },
   Mutation: {
-    move: (_: any, { direction }: { direction: Direction }) =>
-      handleActionDispatch({ type: 'MOVE', direction }),
-    push: (_: any, { objectType }: { objectType: ObjectType }) =>
-      handleActionDispatch({ type: 'PUSH', objectType }),
-    unlock: (_: any, { objectType, key }: { objectType: ObjectType, key: string }) =>
-      handleActionDispatch({ type: 'UNLOCK', objectType, key }),
+    move: (_: any, { direction }: { direction: Direction }, { gameState }: { gameState: State }) =>
+      handleActionDispatch(gameState, { type: 'MOVE', direction }),
+    push: (_: any, { objectType }: { objectType: ObjectType }, { gameState }: { gameState: State }) =>
+      handleActionDispatch(gameState, { type: 'PUSH', objectType }),
+    unlock: (_: any, { objectType, key }: { objectType: ObjectType, key: string }, { gameState }: { gameState: State }) =>
+      handleActionDispatch(gameState, { type: 'UNLOCK', objectType, key }),
   },
 };
 
