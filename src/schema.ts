@@ -22,15 +22,6 @@ const typeDefs = gql`
     direction: Direction!
   }
 
-  enum RoomId {
-    LIGHTSWITCH
-    COMPUTER
-    VERYDARK
-    START
-    PASSWORD
-    WIRE
-  }
-
   enum Direction {
     NORTH
     NORTH_EAST
