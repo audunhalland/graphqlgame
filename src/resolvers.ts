@@ -5,17 +5,20 @@ import {
   ObjectType,
   Room,
   RoomNeigbour,
-  State,
   dispatchAction,
   getRoomDescription,
   getRoomNeighbours,
   getRoomObjects,
   getSubObjects,
-  newGame,
 } from './game/state';
 
-const handleActionDispatch = (gameState: State, action: Action) => {
-  const { ok, message, newState } = dispatchAction(gameState, action);
+import { Context } from './context';
+import { StateManager} from './StateManager';
+
+const handleActionDispatch = (stateManager: StateManager, action: Action) => {
+  const { ok, message, newState } = dispatchAction(stateManager.getState(), action);
+
+  stateManager.updateState(newState);
 
   return {
     success: ok,
@@ -33,21 +36,21 @@ interface RoomObject {
 
 const resolvers = {
   Query: {
-    currentRoom: (_: any, __: any, { gameState }: { gameState: State }) => ({
-      id: gameState.currentRoom,
+    currentRoom: (_: any, __: any, { stateManager }: Context) => ({
+      id: stateManager.getState().currentRoom,
     }),
   },
   Room: {
-    description: (parent: RoomObject, _: any, { gameState }: { gameState: State }) =>
-      getRoomDescription(gameState, parent.id),
-    objects: (parent: RoomObject, _: any, { gameState }: { gameState: State }) =>
-      getRoomObjects(gameState, parent.id),
-    neighbours: (parent: RoomObject, _: any, { gameState }: { gameState: State }) =>
-      getRoomNeighbours(gameState, parent.id)
+    description: (parent: RoomObject, _: any, { stateManager }: Context) =>
+      getRoomDescription(stateManager.getState(), parent.id),
+    objects: (parent: RoomObject, _: any, { stateManager }: Context) =>
+      getRoomObjects(stateManager.getState(), parent.id),
+    neighbours: (parent: RoomObject, _: any, { stateManager }: Context) =>
+      getRoomNeighbours(stateManager.getState(), parent.id)
   },
   GameObject: {
-    objects: (parent: GameObject, _: any, { gameState }: { gameState: State }) =>
-      getSubObjects(gameState, parent),
+    objects: (parent: GameObject, _: any, { stateManager }: Context) =>
+      getSubObjects(stateManager.getState(), parent),
   },
   RoomNeighbour: {
     room: (parent: RoomNeigbour) => ({
@@ -55,12 +58,22 @@ const resolvers = {
     }),
   },
   Mutation: {
-    move: (_: any, { direction }: { direction: Direction }, { gameState }: { gameState: State }) =>
-      handleActionDispatch(gameState, { type: 'MOVE', direction }),
-    push: (_: any, { objectType }: { objectType: ObjectType }, { gameState }: { gameState: State }) =>
-      handleActionDispatch(gameState, { type: 'PUSH', objectType }),
-    unlock: (_: any, { objectType, key }: { objectType: ObjectType, key: string }, { gameState }: { gameState: State }) =>
-      handleActionDispatch(gameState, { type: 'UNLOCK', objectType, key }),
+    move: (
+      _: any,
+      { direction }: { direction: Direction },
+      { stateManager }: Context
+    ) => handleActionDispatch(stateManager, { type: 'MOVE', direction }),
+    push: (
+      _: any,
+      { objectType }: { objectType: ObjectType },
+      { stateManager }: Context
+    ) =>
+      handleActionDispatch(stateManager, { type: 'PUSH', objectType }),
+    unlock: (
+      _: any,
+      { objectType, key }: { objectType: ObjectType, key: string },
+      { stateManager }: Context
+    ) => handleActionDispatch(stateManager, { type: 'UNLOCK', objectType, key }),
   },
 };
 
