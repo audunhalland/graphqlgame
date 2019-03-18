@@ -3,33 +3,23 @@ const { gql } = require('apollo-server');
 const typeDefs = gql`
   type Query {
     currentRoom: Room!
-    roomNeighbours: [RoomNeighbour]!
   }
 
   type Room {
-    room: RoomType!
     description: String!
-    objects: [GameObject]
+    objects: [GameObject]!
     neighbours: [RoomNeighbour!]!
   }
 
   type GameObject {
     type: ObjectType!
     description: String!
+    objects: [GameObject]!
   }
 
   type RoomNeighbour {
+    room: Room!
     direction: Direction!
-    room: RoomType!
-  }
-
-  enum RoomType {
-    LIGHTSWITCH
-    COMPUTER
-    VERYDARK
-    START
-    PASSWORD
-    WIRE
   }
 
   enum Direction {
@@ -57,10 +47,9 @@ const typeDefs = gql`
   }
 
   type Mutation {
-    goToRoom(room: RoomType!): ActionResponse!
-    pushButton: ActionResponse!
-    unlockComputer(password: String!): ActionResponse!
-    unlockDoor(privateKey: String!): ActionResponse!
+    move(direction: Direction!): ActionResponse!
+    push(objectType: ObjectType): ActionResponse!
+    unlock(objectType: ObjectType, key: String!): ActionResponse!
   }
 
   type ActionResponse {

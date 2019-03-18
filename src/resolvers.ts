@@ -1,42 +1,66 @@
 import {
-  Action, Room, newGame, getRoomDescription, getRoomNeighbours, getRoomObjects, dispatchAction
+  Action,
+  Direction,
+  GameObject,
+  ObjectType,
+  Room,
+  RoomNeigbour,
+  State,
+  dispatchAction,
+  getRoomDescription,
+  getRoomNeighbours,
+  getRoomObjects,
+  getSubObjects,
+  newGame,
 } from './game/state';
 
-let gameState = newGame();
-
-console.log(gameState);
-
-const handleActionDispatch = (action: Action) => {
+const handleActionDispatch = (gameState: State, action: Action) => {
   const { ok, message, newState } = dispatchAction(gameState, action);
-
-  if (ok) {
-    gameState = newState;
-  }
 
   return {
     success: ok,
-    message: message
+    message,
+    newState,
   }
+}
+
+interface RoomObject {
+  id: Room;
+  description: string;
+  objects: GameObject[];
+  neighbours: RoomNeigbour[];
 }
 
 const resolvers = {
   Query: {
-    currentRoom: () => ({
-      room: gameState.currentRoom,
-      description: getRoomDescription(gameState, gameState.currentRoom),
-      objects: getRoomObjects(gameState, gameState.currentRoom),
+    currentRoom: (_: any, __: any, { gameState }: { gameState: State }) => ({
+      id: gameState.currentRoom,
     }),
-    roomNeighbours: () => getRoomNeighbours(gameState, gameState.currentRoom),
+  },
+  Room: {
+    description: (parent: RoomObject, _: any, { gameState }: { gameState: State }) =>
+      getRoomDescription(gameState, parent.id),
+    objects: (parent: RoomObject, _: any, { gameState }: { gameState: State }) =>
+      getRoomObjects(gameState, parent.id),
+    neighbours: (parent: RoomObject, _: any, { gameState }: { gameState: State }) =>
+      getRoomNeighbours(gameState, parent.id)
+  },
+  GameObject: {
+    objects: (parent: GameObject, _: any, { gameState }: { gameState: State }) =>
+      getSubObjects(gameState, parent),
+  },
+  RoomNeighbour: {
+    room: (parent: RoomNeigbour) => ({
+      id: parent.room,
+    }),
   },
   Mutation: {
-    goToRoom: (_: any, { room }: { room: Room }) =>
-      handleActionDispatch({ type: 'GOTO_ROOM', room }),
-    pushButton: () =>
-      handleActionDispatch({ type: 'PUSH_BUTTON' }),
-    unlockComputer: (_: any, { password }: { password: string }) =>
-      handleActionDispatch({ type: 'UNLOCK_COMPUTER', password }),
-    unlockDoor: (_: any, { privateKey }: { privateKey: string }) =>
-      handleActionDispatch({ type: 'UNLOCK_DOOR', privateKey })
+    move: (_: any, { direction }: { direction: Direction }, { gameState }: { gameState: State }) =>
+      handleActionDispatch(gameState, { type: 'MOVE', direction }),
+    push: (_: any, { objectType }: { objectType: ObjectType }, { gameState }: { gameState: State }) =>
+      handleActionDispatch(gameState, { type: 'PUSH', objectType }),
+    unlock: (_: any, { objectType, key }: { objectType: ObjectType, key: string }, { gameState }: { gameState: State }) =>
+      handleActionDispatch(gameState, { type: 'UNLOCK', objectType, key }),
   },
 };
 
