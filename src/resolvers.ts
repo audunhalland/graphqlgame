@@ -13,7 +13,7 @@ import {
 } from './game/state';
 
 import { Context } from './context';
-import { StateManager} from './StateManager';
+import { StateManager } from './StateManager';
 
 const handleActionDispatch = (stateManager: StateManager, action: Action) => {
   const { ok, message, newState } = dispatchAction(stateManager.getState(), action);
@@ -34,6 +34,17 @@ interface RoomObject {
   neighbours: RoomNeigbour[];
 }
 
+const PaginateResults = ({ after, pageSize, results }: any) => {
+  const cursorEnd = after * pageSize;
+  const cursorStart = cursorEnd - pageSize;
+
+  return {
+    cursor: after + 1,
+    results: results.slice(cursorStart, cursorEnd),
+    hasMore: cursorEnd < results.length,
+  };
+};
+
 const resolvers = {
   Query: {
     currentRoom: (_: any, __: any, { stateManager }: Context) => ({
@@ -49,8 +60,19 @@ const resolvers = {
       getRoomNeighbours(stateManager.getState(), parent.id)
   },
   GameObject: {
-    objects: (parent: GameObject, _: any, { stateManager }: Context) =>
-      getSubObjects(stateManager.getState(), parent),
+    objects: (parent: GameObject, { pageSize = 8, after = 1 }: any, { stateManager }: Context) => {
+      const { cursor, hasMore, results } = PaginateResults({
+        after,
+        pageSize,
+        results: getSubObjects(stateManager.getState(), parent)
+      });
+
+      return {
+        objects: results,
+        cursor,
+        hasMore,
+      };
+    }
   },
   RoomNeighbour: {
     room: (parent: RoomNeigbour) => ({

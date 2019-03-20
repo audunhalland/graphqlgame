@@ -14,6 +14,14 @@ const typeDefs = gql`
   type GameObject {
     type: ObjectType!
     description: String!
+    objects(
+      after: Int
+    ): GameObjectConnection!
+  }
+
+  type GameObjectConnection {
+    cursor: String!
+    hasMore: Boolean!
     objects: [GameObject]!
   }
 
