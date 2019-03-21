@@ -15,11 +15,13 @@ const typeDefs = gql`
     type: ObjectType!
     description: String!
     objects(
+      first: Int,
       after: String,
     ): GameObjectConnection!
   }
 
   type GameObjectConnection {
+    totalCount: Int!
     edges: [Edge]!
     pageInfo: PageInfo!
   }
