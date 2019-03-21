@@ -37,12 +37,18 @@ const handleActionDispatch = (stateManager: StateManager, action: Action) => {
 
 const PaginateResults = ({ after, pageSize, results }: any) => {
   const cursorStart = parseInt(base64Decode(after), 10);
-  const cursorEnd = cursorStart + parseInt(pageSize, 10);
+  const endCursor = cursorStart + parseInt(pageSize, 10);
 
   return {
-    cursor: base64Encode(cursorEnd.toString()),
-    results: results.slice(cursorStart, cursorEnd),
-    hasMore: cursorEnd < results.length,
+    totalCount: results.length,
+    edges: results.slice(cursorStart, endCursor).map((result: GameObject, index: number) => ({
+      node: result,
+      cursor: base64Encode((cursorStart + index).toString()),
+    })),
+    pageInfo: {
+      endCursor: base64Encode(endCursor.toString()),
+      hasNextPage: endCursor < results.length,
+    },
   };
 };
 
@@ -51,6 +57,11 @@ interface RoomObject {
   description: string;
   objects: GameObject[];
   neighbours: RoomNeigbour[];
+}
+
+interface PageParams {
+  after: string;
+  pageSize: number;
 }
 
 const resolvers = {
@@ -68,20 +79,20 @@ const resolvers = {
       getRoomNeighbours(stateManager.getState(), parent.id)
   },
   GameObject: {
-    objects: (parent: GameObject, { pageSize = 8, after = base64Encode('0') }: any, { stateManager }: Context) => {
-      console.log(getSubObjects(stateManager.getState(), parent))
-      const { cursor, hasMore, results } = PaginateResults({
-        after,
-        pageSize,
-        results: getSubObjects(stateManager.getState(), parent)
-      });
-
-      return {
-        objects: results,
-        cursor,
-        hasMore,
-      };
-    }
+    objects: (
+      parent: GameObject,
+      {
+        pageSize = 8,
+        after = base64Encode('0')
+      }: PageParams,
+      { stateManager }: Context
+    ) => (
+        PaginateResults({
+          after,
+          pageSize,
+          results: getSubObjects(stateManager.getState(), parent)
+        })
+      ),
   },
   RoomNeighbour: {
     room: (parent: RoomNeigbour) => ({

@@ -20,9 +20,18 @@ const typeDefs = gql`
   }
 
   type GameObjectConnection {
+    edges: [Edge]!
+    pageInfo: PageInfo!
+  }
+
+  type Edge {
+    node: GameObject!
     cursor: String!
-    hasMore: Boolean!
-    objects: [GameObject]!
+  }
+
+  type PageInfo {
+    endCursor: String!
+    hasNextPage: Boolean
   }
 
   type RoomNeighbour {
