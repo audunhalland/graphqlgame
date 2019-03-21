@@ -49,7 +49,7 @@ const PaginateResults = ({
   return {
     totalCount: results.length,
     edges: results.slice(cursorStart, endCursor).map((result: GameObject, index: number) => ({
-      node: result,
+      ...result,
       cursor: base64Encode((cursorStart + index).toString()),
     })),
     pageInfo: {
@@ -59,13 +59,6 @@ const PaginateResults = ({
   };
 };
 
-interface RoomObject {
-  id: Room;
-  description: string;
-  objects: GameObject[];
-  corridors: RoomNeigbour[];
-}
-
 interface PageParams {
   after: string;
   first: number;
@@ -73,28 +66,29 @@ interface PageParams {
 
 const resolvers = {
   Query: {
-    currentRoom: (_: any, __: any, { stateManager }: Context) => ({
-      id: stateManager.getState().currentRoom,
-    }),
+    currentRoom: (_: any, __: any, { stateManager }: Context) =>
+      stateManager.getState().currentRoom,
   },
   Room: {
-    description: (parent: RoomObject, _: any, { stateManager }: Context) =>
-      getRoomDescription(stateManager.getState(), parent.id),
+    description: (parent: Room, _: any, { stateManager }: Context) => (
+      getRoomDescription(stateManager.getState(), parent)
+    ),
     objects: (
-      parent: RoomObject, { first, after }: PageParams, { stateManager }: Context
+      parent: Room, { first, after }: PageParams, { stateManager }: Context
     ) =>
       PaginateResults({
         after,
         first,
-        results: getRoomObjects(stateManager.getState(), parent.id)
+        results: getRoomObjects(stateManager.getState(), parent).map(node => ({ node })),
       }),
     corridors: (
-      parent: RoomObject, { first, after }: PageParams, { stateManager }: Context
+      parent: Room, { first, after }: PageParams, { stateManager }: Context
     ) =>
       PaginateResults({
         after,
         first,
-        results: getRoomNeighbours(stateManager.getState(), parent.id)
+        results: getRoomNeighbours(stateManager.getState(), parent).map(({ direction, room }) =>
+          ({ direction, node: room })),
       }),
   },
   GameObject: {
@@ -104,14 +98,9 @@ const resolvers = {
         PaginateResults({
           after,
           first,
-          results: getSubObjects(stateManager.getState(), parent)
+          results: getSubObjects(stateManager.getState(), parent).map(node => ({ node })),
         })
       ),
-  },
-  Corridor: {
-    room: (parent: RoomNeigbour) => ({
-      id: parent.room,
-    }),
   },
   Mutation: {
     move: (
