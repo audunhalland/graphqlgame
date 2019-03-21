@@ -93,10 +93,10 @@ const resolvers = {
           const hasVisited = stateManager.getState().visitedRooms[room];
           return {
             direction,
-            node: hasVisited ? room : null,
             relation: hasVisited
-              ? 'A dark, creepy corridor leading from the room into a previously visited room.'
-              : 'A dark, creepy corridor leading from the room into the unknown.'
+              ? "A dark, creepy corridor leading out from the room, into a place you feel you've been before."
+              : "A dark, creepy corridor leading out from the room, into the unknown.",
+            node: hasVisited ? room : null,
           };
         }),
       }),
