@@ -76,8 +76,19 @@ const resolvers = {
   Room: {
     description: (parent: RoomObject, _: any, { stateManager }: Context) =>
       getRoomDescription(stateManager.getState(), parent.id),
-    objects: (parent: RoomObject, _: any, { stateManager }: Context) =>
-      getRoomObjects(stateManager.getState(), parent.id),
+    objects: (
+      parent: RoomObject,
+      {
+        first = SELECTION_MAX_SIZE,
+        after = base64Encode('0')
+      }: PageParams,
+      { stateManager }: Context
+    ) =>
+      PaginateResults({
+        after,
+        first,
+        results: getRoomObjects(stateManager.getState(), parent.id)
+      }),
     corridors: (parent: RoomObject, _: any, { stateManager }: Context) =>
       getRoomNeighbours(stateManager.getState(), parent.id)
   },

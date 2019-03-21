@@ -7,7 +7,10 @@ const typeDefs = gql`
 
   type Room {
     description: String!
-    objects: [GameObject]!
+    objects(
+      first: Int,
+      after: String,
+    ): GameObjectConnection!
     corridors: [Corridor!]!
   }
 
