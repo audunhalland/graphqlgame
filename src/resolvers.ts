@@ -35,12 +35,11 @@ interface RoomObject {
 }
 
 const PaginateResults = ({ after, pageSize, results }: any) => {
-  const cursorEnd = after * pageSize;
-  const cursorStart = cursorEnd - pageSize;
+  const cursorEnd = after + pageSize;
 
   return {
-    cursor: after + 1,
-    results: results.slice(cursorStart, cursorEnd),
+    cursor: cursorEnd,
+    results: results.slice(after, cursorEnd),
     hasMore: cursorEnd < results.length,
   };
 };
@@ -60,7 +59,8 @@ const resolvers = {
       getRoomNeighbours(stateManager.getState(), parent.id)
   },
   GameObject: {
-    objects: (parent: GameObject, { pageSize = 8, after = 1 }: any, { stateManager }: Context) => {
+    objects: (parent: GameObject, { pageSize = 8, after = 0 }: any, { stateManager }: Context) => {
+      console.log(getSubObjects(stateManager.getState(), parent))
       const { cursor, hasMore, results } = PaginateResults({
         after,
         pageSize,
