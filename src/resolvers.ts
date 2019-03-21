@@ -17,6 +17,8 @@ import {
 import { Context } from './context';
 import { StateManager } from './StateManager';
 
+const SELECTION_MAX_SIZE = 8;
+
 const base64Encode = (data: string) =>
   base64.encode(data);
 
@@ -35,9 +37,10 @@ const handleActionDispatch = (stateManager: StateManager, action: Action) => {
   }
 }
 
-const PaginateResults = ({ after, pageSize, results }: any) => {
+const PaginateResults = ({ after, first, results }: any) => {
+  const selectionSize = first > SELECTION_MAX_SIZE ? SELECTION_MAX_SIZE : first;
   const cursorStart = parseInt(base64Decode(after), 10);
-  const endCursor = cursorStart + parseInt(pageSize, 10);
+  const endCursor = cursorStart + parseInt(selectionSize, 10);
 
   return {
     totalCount: results.length,
@@ -61,7 +64,7 @@ interface RoomObject {
 
 interface PageParams {
   after: string;
-  pageSize: number;
+  first: number;
 }
 
 const resolvers = {
@@ -82,14 +85,14 @@ const resolvers = {
     objects: (
       parent: GameObject,
       {
-        pageSize = 8,
+        first = SELECTION_MAX_SIZE,
         after = base64Encode('0')
       }: PageParams,
       { stateManager }: Context
     ) => (
         PaginateResults({
           after,
-          pageSize,
+          first,
           results: getSubObjects(stateManager.getState(), parent)
         })
       ),
