@@ -1,3 +1,5 @@
+const base64 = require('base-64');
+
 import {
   Action,
   Direction,
@@ -13,7 +15,15 @@ import {
 } from './game/state';
 
 import { Context } from './context';
-import { StateManager} from './StateManager';
+import { StateManager } from './StateManager';
+
+const SELECTION_MAX_SIZE = 8;
+
+const base64Encode = (data: string) =>
+  base64.encode(data);
+
+const base64Decode = (data: string) =>
+  base64.decode(data);
 
 const handleActionDispatch = (stateManager: StateManager, action: Action) => {
   const { ok, message, newState } = dispatchAction(stateManager.getState(), action);
@@ -27,11 +37,34 @@ const handleActionDispatch = (stateManager: StateManager, action: Action) => {
   }
 }
 
+const PaginateResults = ({ after, first, results }: any) => {
+  const selectionSize = first > SELECTION_MAX_SIZE ? SELECTION_MAX_SIZE : first;
+  const cursorStart = parseInt(base64Decode(after), 10);
+  const endCursor = cursorStart + parseInt(selectionSize, 10);
+
+  return {
+    totalCount: results.length,
+    edges: results.slice(cursorStart, endCursor).map((result: GameObject, index: number) => ({
+      node: result,
+      cursor: base64Encode((cursorStart + index).toString()),
+    })),
+    pageInfo: {
+      endCursor: base64Encode(endCursor.toString()),
+      hasNextPage: endCursor < results.length,
+    },
+  };
+};
+
 interface RoomObject {
   id: Room;
   description: string;
   objects: GameObject[];
-  neighbours: RoomNeigbour[];
+  corridors: RoomNeigbour[];
+}
+
+interface PageParams {
+  after: string;
+  first: number;
 }
 
 const resolvers = {
@@ -45,14 +78,26 @@ const resolvers = {
       getRoomDescription(stateManager.getState(), parent.id),
     objects: (parent: RoomObject, _: any, { stateManager }: Context) =>
       getRoomObjects(stateManager.getState(), parent.id),
-    neighbours: (parent: RoomObject, _: any, { stateManager }: Context) =>
+    corridors: (parent: RoomObject, _: any, { stateManager }: Context) =>
       getRoomNeighbours(stateManager.getState(), parent.id)
   },
   GameObject: {
-    objects: (parent: GameObject, _: any, { stateManager }: Context) =>
-      getSubObjects(stateManager.getState(), parent),
+    objects: (
+      parent: GameObject,
+      {
+        first = SELECTION_MAX_SIZE,
+        after = base64Encode('0')
+      }: PageParams,
+      { stateManager }: Context
+    ) => (
+        PaginateResults({
+          after,
+          first,
+          results: getSubObjects(stateManager.getState(), parent)
+        })
+      ),
   },
-  RoomNeighbour: {
+  Corridor: {
     room: (parent: RoomNeigbour) => ({
       id: parent.room,
     }),

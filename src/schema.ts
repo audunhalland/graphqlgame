@@ -8,16 +8,35 @@ const typeDefs = gql`
   type Room {
     description: String!
     objects: [GameObject]!
-    neighbours: [RoomNeighbour!]!
+    corridors: [Corridor!]!
   }
 
   type GameObject {
     type: ObjectType!
     description: String!
-    objects: [GameObject]!
+    objects(
+      first: Int,
+      after: String,
+    ): GameObjectConnection!
   }
 
-  type RoomNeighbour {
+  type GameObjectConnection {
+    totalCount: Int!
+    edges: [Edge]!
+    pageInfo: PageInfo!
+  }
+
+  type Edge {
+    node: GameObject!
+    cursor: String!
+  }
+
+  type PageInfo {
+    endCursor: String!
+    hasNextPage: Boolean
+  }
+
+  type Corridor {
     room: Room!
     direction: Direction!
   }
