@@ -59,7 +59,7 @@ interface RoomObject {
   id: Room;
   description: string;
   objects: GameObject[];
-  neighbours: RoomNeigbour[];
+  corridors: RoomNeigbour[];
 }
 
 interface PageParams {
@@ -78,7 +78,7 @@ const resolvers = {
       getRoomDescription(stateManager.getState(), parent.id),
     objects: (parent: RoomObject, _: any, { stateManager }: Context) =>
       getRoomObjects(stateManager.getState(), parent.id),
-    neighbours: (parent: RoomObject, _: any, { stateManager }: Context) =>
+    corridors: (parent: RoomObject, _: any, { stateManager }: Context) =>
       getRoomNeighbours(stateManager.getState(), parent.id)
   },
   GameObject: {
@@ -97,7 +97,7 @@ const resolvers = {
         })
       ),
   },
-  RoomNeighbour: {
+  Corridor: {
     room: (parent: RoomNeigbour) => ({
       id: parent.room,
     }),

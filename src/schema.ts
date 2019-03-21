@@ -8,7 +8,7 @@ const typeDefs = gql`
   type Room {
     description: String!
     objects: [GameObject]!
-    neighbours: [RoomNeighbour!]!
+    corridors: [Corridor!]!
   }
 
   type GameObject {
@@ -36,7 +36,7 @@ const typeDefs = gql`
     hasNextPage: Boolean
   }
 
-  type RoomNeighbour {
+  type Corridor {
     room: Room!
     direction: Direction!
   }
