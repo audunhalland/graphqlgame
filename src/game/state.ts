@@ -238,7 +238,7 @@ export const getRoomObjects = (state: State, room: Room): GameObject[] => {
         type: ObjectType.ESCAPE_DOOR,
         parentRelation: "To the south, behind you",
         description: state.hasUnlockedDoor
-          ? "The door opens, your eyes blinded by the sun. TAKK FOR AT DU DELTOK PÅ VÅR WORKSHOP! -Mayn og Audun"
+          ? "The door opens, your eyes blinded by the sun. With a tear in you eye you watch the closing credits scoll by."
           : "An enormous door. It is shut and locked tightly. Is this your way to freedom? On the door you can see a sign with a message.",
       }];
     case Room.PASSWORD:
@@ -269,11 +269,25 @@ export const getSubObjects = (state: State, object: GameObject): GameObject[] =>
         return [];
       }
     case ObjectType.ESCAPE_DOOR:
-      return [{
-        type: ObjectType.SIGN,
-        parentRelation: 'Near the floor, in the corner',
-        description: `A sign with a printed message. It reads "public key: ${getDoorPublicKey(state)}"`,
-      }];
+      return state.hasUnlockedDoor
+        ? [{
+          type: ObjectType.KEY_PAIR,
+          parentRelation: "First line of end credits",
+          description: "Mayn Kjær",
+        }, {
+          type: ObjectType.KEY_PAIR,
+          parentRelation: "Second line of end credits",
+          description: "Audun Halland",
+        }, {
+          type: ObjectType.SIGN,
+          parentRelation: "Last line of end credits",
+          description: "TAKK FOR AT DU DELTOK PÅ VÅR WORKSHOP!",
+        }]
+        : [{
+          type: ObjectType.SIGN,
+          parentRelation: 'Near the floor, in the corner',
+          description: `A sign with a printed message. It reads "public key: ${getDoorPublicKey(state)}"`,
+        }];
     default:
       return [];
   }
