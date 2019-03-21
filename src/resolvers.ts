@@ -6,7 +6,6 @@ import {
   GameObject,
   ObjectType,
   Room,
-  RoomNeigbour,
   dispatchAction,
   getRoomDescription,
   getRoomNeighbours,
@@ -87,8 +86,16 @@ const resolvers = {
       PaginateResults({
         after,
         first,
-        results: getRoomNeighbours(stateManager.getState(), parent).map(({ direction, room }) =>
-          ({ direction, node: room })),
+        results: getRoomNeighbours(stateManager.getState(), parent).map(({ direction, room }) => {
+          const hasVisited = stateManager.getState().visitedRooms[room];
+          return {
+            direction,
+            node: hasVisited ? room : null,
+            description: hasVisited
+              ? 'A dark, creepy corridor leading to a previously visited room.'
+              : 'A dark, creepy corridor leading into the unknown.'
+          };
+        }),
       }),
   },
   GameObject: {
