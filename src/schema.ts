@@ -44,13 +44,9 @@ const typeDefs = gql`
   }
 
   type CorridorEdge {
-    node: Corridor!
     cursor: String!
-  }
-
-  type Corridor {
-    room: Room!
     direction: Direction!
+    node: Room!
   }
 
   type PageInfo {
