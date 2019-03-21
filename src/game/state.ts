@@ -1,6 +1,7 @@
 import * as Random from './random';
 
-export const NUMBER_OF_COMPUTER_FILES = 8;
+export const NUMBER_OF_COMPUTER_FILES = 16;
+export const DOOR_KEY_SKIP = 8;
 
 // Clockwise, starting north
 export enum Room {
@@ -166,7 +167,8 @@ export const getRoomNeighbours = (state: State, room: Room): RoomNeigbour[] => {
 export const getComputerPassword = (state: State): string => Random.getPassword(state.seed, 0, 10);
 export const getPrivateKey = (state: State, index: number): string => Random.getPrivateKey(state.seed, index, 40);
 export const getPublicKey = (state: State, index: number): string => Random.getPublicKey(state.seed, index, 20);
-export const getDoorKeyIndex = (state: State): number => Math.floor(Random.getNumber(state.seed, 42) * NUMBER_OF_COMPUTER_FILES);
+export const getDoorKeyIndex = (state: State): number =>
+  DOOR_KEY_SKIP + Math.floor(Random.getNumber(state.seed, 42) * (NUMBER_OF_COMPUTER_FILES - DOOR_KEY_SKIP));
 export const getDoorPrivateKey = (state: State): string => getPrivateKey(state, getDoorKeyIndex(state));
 export const getDoorPublicKey = (state: State): string => getPublicKey(state, getDoorKeyIndex(state));
 
@@ -228,14 +230,16 @@ export const getRoomObjects = (state: State, room: Room): GameObject[] => {
         type: ObjectType.COMPUTER,
         parentRelation: "In the corner",
         description: state.hasUnlockedComputer
-          ? 'A large mainframe computer. You have successfully logged into it as root.'
-          : 'A large mainframe computer. It is currently prompts for a root password.',
+          ? 'A large mainframe computer. You have successfully logged into it as root. The computer terminal is only showing 8 lines at a time.'
+          : 'A large mainframe computer. It currently prompts for a root password.',
       }];
     case Room.START:
       return [{
         type: ObjectType.ESCAPE_DOOR,
         parentRelation: "To the south, behind you",
-        description: "An enormous door. It is shut and locked tightly. Is this your way to freedom? On the door you can see a sign with a message.",
+        description: state.hasUnlockedDoor
+          ? "The door opens, your eyes blinded by the sun. TAKK FOR AT DU DELTOK PÅ VÅR WORKSHOP! -Mayn og Audun"
+          : "An enormous door. It is shut and locked tightly. Is this your way to freedom? On the door you can see a sign with a message.",
       }];
     case Room.PASSWORD:
       if (!state.hasPressedLightSwitch) return [];
@@ -257,7 +261,7 @@ export const getSubObjects = (state: State, object: GameObject): GameObject[] =>
         return [...Array(NUMBER_OF_COMPUTER_FILES).keys()].map(
           (index) => ({
             type: ObjectType.KEY_PAIR,
-            parentRelation: "On the computer's terminal screen, limited to only 8 lines",
+            parentRelation: "On the computer's terminal screen",
             description: `A key pair. It reads PUBLIC "${getPublicKey(state, index)}", PRIVATE "${getPrivateKey(state, index)}".`,
           })
         );
@@ -356,7 +360,7 @@ export const dispatchAction = (state: State, action: Action): ActionResult => {
             hasUnlockedDoor: true,
           },
           ok: true,
-          message: 'Door unlocked! You finished the game!',
+          message: 'Door unlocked! You are finally free to escape the GRAPHYRINTH.',
         };
       } else {
         return {
