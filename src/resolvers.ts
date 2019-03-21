@@ -37,7 +37,11 @@ const handleActionDispatch = (stateManager: StateManager, action: Action) => {
   }
 }
 
-const PaginateResults = ({ after, first, results }: any) => {
+const PaginateResults = ({
+  after = base64Encode('0'),
+  first = SELECTION_MAX_SIZE,
+  results
+}: any) => {
   const selectionSize = first > SELECTION_MAX_SIZE ? SELECTION_MAX_SIZE : first;
   const cursorStart = parseInt(base64Decode(after), 10);
   const endCursor = cursorStart + parseInt(selectionSize, 10);
@@ -77,29 +81,25 @@ const resolvers = {
     description: (parent: RoomObject, _: any, { stateManager }: Context) =>
       getRoomDescription(stateManager.getState(), parent.id),
     objects: (
-      parent: RoomObject,
-      {
-        first = SELECTION_MAX_SIZE,
-        after = base64Encode('0')
-      }: PageParams,
-      { stateManager }: Context
+      parent: RoomObject, { first, after }: PageParams, { stateManager }: Context
     ) =>
       PaginateResults({
         after,
         first,
         results: getRoomObjects(stateManager.getState(), parent.id)
       }),
-    corridors: (parent: RoomObject, _: any, { stateManager }: Context) =>
-      getRoomNeighbours(stateManager.getState(), parent.id)
+    corridors: (
+      parent: RoomObject, { first, after }: PageParams, { stateManager }: Context
+    ) =>
+      PaginateResults({
+        after,
+        first,
+        results: getRoomNeighbours(stateManager.getState(), parent.id)
+      }),
   },
   GameObject: {
     objects: (
-      parent: GameObject,
-      {
-        first = SELECTION_MAX_SIZE,
-        after = base64Encode('0')
-      }: PageParams,
-      { stateManager }: Context
+      parent: GameObject, { first, after }: PageParams, { stateManager }: Context
     ) => (
         PaginateResults({
           after,

@@ -11,7 +11,21 @@ const typeDefs = gql`
       first: Int,
       after: String,
     ): GameObjectConnection!
-    corridors: [Corridor!]!
+    corridors(
+      first: Int,
+      after: String,
+    ): CorridorConnection!
+  }
+
+  type GameObjectConnection {
+    totalCount: Int!
+    edges: [GameObjectEdge]!
+    pageInfo: PageInfo!
+  }
+
+  type GameObjectEdge {
+    node: GameObject!
+    cursor: String!
   }
 
   type GameObject {
@@ -23,25 +37,25 @@ const typeDefs = gql`
     ): GameObjectConnection!
   }
 
-  type GameObjectConnection {
+  type CorridorConnection {
     totalCount: Int!
-    edges: [Edge]!
+    edges: [CorridorEdge]!
     pageInfo: PageInfo!
   }
 
-  type Edge {
-    node: GameObject!
+  type CorridorEdge {
+    node: Corridor!
     cursor: String!
-  }
-
-  type PageInfo {
-    endCursor: String!
-    hasNextPage: Boolean
   }
 
   type Corridor {
     room: Room!
     direction: Direction!
+  }
+
+  type PageInfo {
+    endCursor: String!
+    hasNextPage: Boolean
   }
 
   enum Direction {
