@@ -15,7 +15,7 @@ const typeDefs = gql`
     type: ObjectType!
     description: String!
     objects(
-      after: Int
+      after: String,
     ): GameObjectConnection!
   }
 
