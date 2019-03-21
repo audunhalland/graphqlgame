@@ -43,6 +43,7 @@ export enum ObjectType {
 
 export interface GameObject {
   type: ObjectType,
+  parentRelation: string;
   description: string;
 }
 
@@ -176,11 +177,11 @@ export const getRoomDescription = (state: State, room: Room): string => {
   switch (room) {
     case Room.LIGHTSWITCH:
       return state.currentRoom === room
-        ? 'You are in a room with four connecting corridors. On the wall there is a button. You hear a humming noise to the east.'
-        : 'A room with a button on the wall.';
+        ? 'You are in a room with four connecting corridors. You notice something of interest on the wall in front of you. You hear a humming noise to the east.'
+        : 'A room with an object of interest on the wall.';
     case Room.COMPUTER:
       return state.currentRoom === room
-        ? 'You are in a large and noisy room. In front of you is a big mainframe computer. The noise comes from its large cooling fans. There are two corridor entrances on either side of you.'
+        ? 'You are in a somewhat noisy room. In the corner of the room you see a big, old fashioned mainframe computer. The noise comes from its large cooling fans. There are two corridor entrances on either side of you.'
         : 'The computer room.';
     case Room.VERYDARK:
       return state.currentRoom === room
@@ -188,7 +189,7 @@ export const getRoomDescription = (state: State, room: Room): string => {
         : 'A very dark room.';
     case Room.START:
       return state.currentRoom === room
-        ? 'Oh no. You are trapped in a room. Is it part of a labyrinth? There appears to be two corridors leading out of the room. Behind you is an enormous locked door.'
+        ? 'Oh no. You are trapped in a room. It is a cold and creepy place. There appears to be two corridors leading out of the room. Behind you is an enormous door.'
         : 'A room with an enormous locked door.';
     case Room.PASSWORD:
       return state.hasPressedLightSwitch
@@ -219,11 +220,13 @@ export const getRoomObjects = (state: State, room: Room): GameObject[] => {
     case Room.LIGHTSWITCH:
       return [{
         type: ObjectType.BUTTON,
-        description: 'A button on the wall.',
+        parentRelation: "On the room's front wall",
+        description: 'A button. Somehow you feel that it can be pushed.',
       }];
     case Room.COMPUTER:
       return [{
         type: ObjectType.COMPUTER,
+        parentRelation: "In the corner",
         description: state.hasUnlockedComputer
           ? 'A large mainframe computer. You have successfully logged into it as root.'
           : 'A large mainframe computer. It is currently prompts for a root password.',
@@ -231,13 +234,15 @@ export const getRoomObjects = (state: State, room: Room): GameObject[] => {
     case Room.START:
       return [{
         type: ObjectType.ESCAPE_DOOR,
-        description: "A big, locked door. It's blocking your exit from the labyrinth. On the door is a big sign with a code on it.",
+        parentRelation: "To the south, behind you",
+        description: "An enormous door. It is shut and locked tightly. Is this your way to freedom? On the door you can see a sign with a message.",
       }];
     case Room.PASSWORD:
       if (!state.hasPressedLightSwitch) return [];
       return [{
         type: ObjectType.PASSWORD,
-        description: `A root password lying on the floor. It says "${getComputerPassword(state)}".`,
+        parentRelation: "On the floor",
+        description: `A root password! It says "${getComputerPassword(state)}".`,
       }]
     default:
       return [];
@@ -252,7 +257,8 @@ export const getSubObjects = (state: State, object: GameObject): GameObject[] =>
         return [...Array(NUMBER_OF_COMPUTER_FILES).keys()].map(
           (index) => ({
             type: ObjectType.KEY_PAIR,
-            description: `A key pair. It says PUBLIC "${getPublicKey(state, index)}", PRIVATE "${getPrivateKey(state, index)}".`,
+            parentRelation: "On the computer's terminal screen, limited to only 8 lines",
+            description: `A key pair. It reads PUBLIC "${getPublicKey(state, index)}", PRIVATE "${getPrivateKey(state, index)}".`,
           })
         );
       } else {
@@ -261,7 +267,8 @@ export const getSubObjects = (state: State, object: GameObject): GameObject[] =>
     case ObjectType.ESCAPE_DOOR:
       return [{
         type: ObjectType.SIGN,
-        description: `A big sign on the door. It reads "public key: ${getDoorPublicKey(state)}"`,
+        parentRelation: 'Near the floor, in the corner',
+        description: `A sign with a printed message. It reads "public key: ${getDoorPublicKey(state)}"`,
       }];
     default:
       return [];

@@ -78,7 +78,10 @@ const resolvers = {
       PaginateResults({
         after,
         first,
-        results: getRoomObjects(stateManager.getState(), parent).map(node => ({ node })),
+        results: getRoomObjects(stateManager.getState(), parent).map(gameObject => ({
+          relation: gameObject.parentRelation,
+          node: gameObject,
+        })),
       }),
     corridors: (
       parent: Room, { first, after }: PageParams, { stateManager }: Context
@@ -91,9 +94,9 @@ const resolvers = {
           return {
             direction,
             node: hasVisited ? room : null,
-            description: hasVisited
-              ? 'A dark, creepy corridor leading to a previously visited room.'
-              : 'A dark, creepy corridor leading into the unknown.'
+            relation: hasVisited
+              ? 'A dark, creepy corridor leading from the room into a previously visited room.'
+              : 'A dark, creepy corridor leading from the room into the unknown.'
           };
         }),
       }),
@@ -105,7 +108,10 @@ const resolvers = {
         PaginateResults({
           after,
           first,
-          results: getSubObjects(stateManager.getState(), parent).map(node => ({ node })),
+          results: getSubObjects(stateManager.getState(), parent).map(gameObject => ({
+            relation: gameObject.parentRelation,
+            node: gameObject,
+          })),
         })
       ),
   },
