@@ -24,6 +24,7 @@ const typeDefs = gql`
   }
 
   type GameObjectEdge {
+    relation: String!
     node: GameObject!
     cursor: String!
   }
@@ -46,7 +47,8 @@ const typeDefs = gql`
   type CorridorEdge {
     cursor: String!
     direction: Direction!
-    node: Room!
+    relation: String!
+    node: Room
   }
 
   type PageInfo {

@@ -6,7 +6,6 @@ import {
   GameObject,
   ObjectType,
   Room,
-  RoomNeigbour,
   dispatchAction,
   getRoomDescription,
   getRoomNeighbours,
@@ -79,7 +78,10 @@ const resolvers = {
       PaginateResults({
         after,
         first,
-        results: getRoomObjects(stateManager.getState(), parent).map(node => ({ node })),
+        results: getRoomObjects(stateManager.getState(), parent).map(gameObject => ({
+          relation: gameObject.parentRelation,
+          node: gameObject,
+        })),
       }),
     corridors: (
       parent: Room, { first, after }: PageParams, { stateManager }: Context
@@ -87,8 +89,16 @@ const resolvers = {
       PaginateResults({
         after,
         first,
-        results: getRoomNeighbours(stateManager.getState(), parent).map(({ direction, room }) =>
-          ({ direction, node: room })),
+        results: getRoomNeighbours(stateManager.getState(), parent).map(({ direction, room }) => {
+          const hasVisited = stateManager.getState().visitedRooms[room];
+          return {
+            direction,
+            relation: hasVisited
+              ? "A dark, creepy corridor leading out from the room, into a place you feel you've been before."
+              : "A dark, creepy corridor leading out from the room, into the unknown.",
+            node: hasVisited ? room : null,
+          };
+        }),
       }),
   },
   GameObject: {
@@ -98,7 +108,10 @@ const resolvers = {
         PaginateResults({
           after,
           first,
-          results: getSubObjects(stateManager.getState(), parent).map(node => ({ node })),
+          results: getSubObjects(stateManager.getState(), parent).map(gameObject => ({
+            relation: gameObject.parentRelation,
+            node: gameObject,
+          })),
         })
       ),
   },
